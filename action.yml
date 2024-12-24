@@ -14,20 +14,20 @@ runs:
         with:
           python-version: 3.x
 
-      - name: Install selenium
-        run: pip install selenium
+    - name: Install selenium
+      run: pip install selenium
 
-      - name: Run Selenium script
-        run: python selenium_script.py "${{ inputs.overleaf_url }}"
+    - name: Run Selenium script
+      run: python selenium_script.py "${{ inputs.overleaf_url }}"
 
-      - name: Commit the PDF file
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+    - name: Commit the PDF file
+      run: |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
 
-          pdf_file=$(find . -type f -name "*.pdf" | head -n 1)
+        pdf_file=$(find . -type f -name "*.pdf" | head -n 1)
 
-          git add "$pdf_file"
-          git commit -m "Resume updated"
-          git push https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main 
+        git add "$pdf_file"
+        git commit -m "Resume updated"
+        git push https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main 
 
