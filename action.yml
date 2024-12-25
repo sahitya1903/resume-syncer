@@ -10,16 +10,15 @@ runs:
   using: 'composite'
   steps:
     - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.x
 
     - name: Install selenium
       run: pip install selenium
 
     - name: Run Selenium script
       run: python selenium_script.py "${{ inputs.overleaf_url }}"
-
     - name: Commit the PDF file
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -29,5 +28,6 @@ runs:
 
         git add "$pdf_file"
         git commit -m "Resume updated"
-        git push https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main 
-
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

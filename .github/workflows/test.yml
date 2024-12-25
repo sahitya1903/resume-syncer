@@ -1,0 +1,15 @@
+name: Test Custom Action
+on:
+  workflow_dispatch:
+	schedule:
+		- cron: '0 0 * * 0'
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run custom action
+        uses: ./
+        with:
+          overleaf_url: 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
