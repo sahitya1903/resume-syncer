@@ -13,12 +13,16 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
+      shell: bash
 
     - name: Install selenium
       run: pip install selenium
+      shell: bash
 
     - name: Run Selenium script
       run: python selenium_script.py "${{ inputs.overleaf_url }}"
+      shell: bash
+
     - name: Commit the PDF file
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -31,6 +35,7 @@ runs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
 
 icon: 'book'
 color: 'blue'
