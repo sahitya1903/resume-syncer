@@ -9,4 +9,4 @@ jobs:
       - uses: ./ # Uses action.yml in the root directory
         with:
           overleaf_url: 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
-          # github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
