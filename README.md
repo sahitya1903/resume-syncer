@@ -27,9 +27,9 @@ jobs:
 
 - Create a repo for hosting the resume. [Example]()
 
-- Go to your overleaf project and get the read-only link. (Click on Share, turn on link sharing and copy the view-only link).
+- Go to your overleaf project and grab the read-only link. (Click on Share, turn on link sharing and copy the view-only link).
 
-- Create a GitHub Actions Workflow file with above code (at .github/workflows/update-resume.yml). Replace with your `overleaf_url`.
+- Create a GitHub Actions workflow file with above code (at .github/workflows/update-resume.yml). Replace with your `overleaf_url`.
 
 - Allow Read and Write permissions for GitHub Actions. (Settings > Actions > General > Workflow permissions > Read and write permissions).
 
@@ -37,7 +37,9 @@ jobs:
 
 - Run the action manually once. (Actions > Fetch overleaf resume > Run workflow)
 
-- Find your hosted resume at https://<usrname>.github.io/resume/<your-pdf-name>.pdf
+- Find your hosted resume at `https://<usrname>.github.io/resume/<your-pdf-name>.pdf`. This will sync automatically with your overleaf pdf.
+
+- (Optional) Use [Zapier](https://youtu.be/d5g-pIeoUL4) to sync with google drive. [Eg](https://zapier.com/shared/97c52bfb5e6295840a45c82f90d4e6e7bcd23037).
 
 Note: After the action finishes, the Github Pages deployment will start and this may take a while. Do a hard refresh if the pdf gets cached.
 
