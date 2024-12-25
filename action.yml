@@ -6,8 +6,9 @@ inputs:
     required: true
     description: Read-url from overleaf
   github_token:
-    required: true
+    # required: true
     description: GitHub token for authentication
+    default: ${{ secrets.GITHUB_TOKEN }}
 
 runs:
   using: 'composite'
@@ -38,5 +39,6 @@ runs:
       env:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
-# icon: 'book'
-# color: 'blue'
+
+icon: 'book'
+color: 'blue'

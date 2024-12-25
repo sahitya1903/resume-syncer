@@ -9,8 +9,6 @@ name: Fetch Overleaf PDF
 
 on:
   workflow_dispatch:
-	schedule:
-		- cron: '0 0 * * 0' # This will run every Sunday (at 00:00 UTC)
 
 jobs:
   fetch-pdf:
@@ -21,3 +19,5 @@ jobs:
         with:
           overleaf_url: 'your-overleaf-read-only-url'
 ```
+
+Allow GitHub Actions to Read and write permissions
