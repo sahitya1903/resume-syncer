@@ -1,6 +1,6 @@
-Overleaf doesn’t provide a direct, hosted link to PDFs within its projects. Every time you make changes to your resume, you need to manually download the updated pdf.
+Overleaf doesn’t provide a direct, hosted link to PDFs within its projects. Every time you make changes to your resume, you need to manually download the updated pdf for sharing.
 
-This GitHub action automates fetching the latest pdf from overleaf and commits it to your GitHub repo, from where it can be easily hosted.
+This GitHub action automates fetching the latest pdf from overleaf and commits it to your GitHub repo, from where it can be easily hosted and shared.
 
 ## Example Usage
 
@@ -46,3 +46,5 @@ Note: After the action finishes, the Github Pages deployment will start and this
 - Currently, the pdf is updated based on a scheduled cron job. Ideally, we'd like to check whether the pdf has been updated on overleaf before committing it to avoid unnecessary pushes. (Unfortunately, I could not find the last updated field on overleaf.)
 
 - I'm using Selenium to fetch the pdf, as using curl didn’t work due to overleaf’s authentication measures on the read-only link. I'm curious if there's a more straightforward solution than this.
+
+- More logging and error handling
