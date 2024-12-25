@@ -1,10 +1,13 @@
 name: Auto-download resume from overleaf
 description: Fetches a resume pdf from an overleaf and commits it to the repository.
-author: sbrjt
+
 inputs:
   overleaf_url:
-    description: Read-url from overleaf
     required: true
+    description: Read-url from overleaf
+  github_token:
+    required: true
+    description: GitHub token for authentication
 
 runs:
   using: 'composite'
@@ -13,7 +16,6 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
-      shell: bash
 
     - name: Install selenium
       run: pip install selenium
@@ -34,8 +36,7 @@ runs:
         git commit -m "Resume updated"
         git push
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
-
-icon: 'book'
-color: 'blue'
+# icon: 'book'
+# color: 'blue'
