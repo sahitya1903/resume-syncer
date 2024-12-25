@@ -13,3 +13,6 @@ jobs:
         uses: ./
         with:
           overleaf_url: 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
+
+icon: "book"  
+color: "green" 
