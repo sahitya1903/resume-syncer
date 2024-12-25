@@ -1,5 +1,6 @@
 name: Auto-download resume from overleaf
 description: Fetches a resume pdf from an overleaf and commits it to the repository.
+authon: sbrjt
 
 inputs:
   overleaf_url:
@@ -39,5 +40,6 @@ runs:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
 
-icon: 'book'
-color: 'blue'
+branding:
+  icon: 'book'
+  color: 'green'
