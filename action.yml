@@ -3,7 +3,7 @@ description: Fetches a resume pdf from an overleaf and commits it to the reposit
 author: sbrjt
 inputs:
   overleaf_url:
-    description: The Overleaf URL to fetch the PDF from.
+    description: Read-url from overleaf
     required: true
 
 runs:
