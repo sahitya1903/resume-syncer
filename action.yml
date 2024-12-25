@@ -23,7 +23,7 @@ runs:
       shell: bash
 
     - name: Run Selenium script
-      run: python selenium_script.py "${{ inputs.overleaf_url }}"
+      run: python ${{ github.action_path }}/selenium_script.py "${{ inputs.overleaf_url }}"
       shell: bash
 
     - name: Commit the PDF file
