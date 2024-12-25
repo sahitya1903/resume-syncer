@@ -1,5 +1,5 @@
-name: Fetch PDF from Overleaf
-description: Fetches a PDF from an Overleaf document and commits it to the repository.
+name: Auto-download resume from overleaf
+description: Fetches a resume pdf from an overleaf and commits it to the repository.
 author: sbrjt
 inputs:
   overleaf_url:
