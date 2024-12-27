@@ -10,7 +10,7 @@ name: Fetch overleaf resume
 on:
   schedule:
     - cron: '0 0 * * *' # Daily at midnight
-  workflow_dispatch: # Manual
+  workflow_dispatch: # Manual trigger
 
 jobs:
   fetch-pdf:
@@ -25,7 +25,7 @@ jobs:
 
 ## Detailed Steps
 
-- Create a repo for hosting the resume. [Example]()
+- Create a repo for hosting the resume. [Example](https://github.com/Sbrjt/resume)
 
 - Go to your overleaf project and grab the read-only link. (Click on Share, turn on link sharing and copy the view-only link).
 
