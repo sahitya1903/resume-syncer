@@ -58,9 +58,8 @@ if not latex.endswith(r'\end{document}'):
 with open("resume.tex", "r+") as file:
     if latex == file.read():
         print("No changes detected")
-        # with open("/github/env", "a") as f:
-        #     f.write(f"skip=TRUE\n")
-        print("TRUE")
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            print(f"should_run_task2={flag}", file=fh)
         sys.exit(0)
     else:
         file.seek(0)
