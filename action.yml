@@ -27,11 +27,12 @@ runs:
 
     - name: Run Selenium script
       run: |
-        set -e
-        python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}"
+      skip=$(python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}")
+      echo "skip=$skip" >> $GITHUB_ENV
       shell: bash
 
     - name: Commit the PDF file
+      if: ${{ env.skip != 'True' }}
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"

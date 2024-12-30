@@ -6,6 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
+print(os.getcwd())
+
 # delete previous pdf file
 for file in os.listdir(os.getcwd()):
     if file.endswith('.pdf'):
@@ -56,6 +58,9 @@ if not latex.endswith(r'\end{document}'):
 with open("resume.tex", "r+") as file:
     if latex == file.read():
         print("No changes detected")
+        # with open("/github/env", "a") as f:
+        #     f.write(f"skip=TRUE\n")
+        print("TRUE")
         sys.exit(0)
     else:
         file.seek(0)
