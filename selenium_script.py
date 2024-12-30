@@ -59,7 +59,7 @@ with open("resume.tex", "r+") as file:
     if latex == file.read():
         print("No changes detected")
         with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-            print(f"should_run_task2={flag}", file=fh)
+            print("skip=True", file=fh)
         sys.exit(0)
     else:
         file.seek(0)
@@ -78,3 +78,6 @@ print('Pdf downloaded')
 
 time.sleep(5)  # Wait for the download to complete
 browser.quit()
+
+with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+    print("skip=False", file=fh)

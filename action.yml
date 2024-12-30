@@ -28,12 +28,11 @@ runs:
     - name: Run Selenium script
       id: check-flag
       run: |
-        skip=$(python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}")
-        echo "skip=$skip" >> $GITHUB_ENV
+        python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}"
       shell: bash
 
     - name: Commit the PDF file
-      if: steps.check-flag.outputs.should_run_task2 == 'true'
+      if: steps.check-flag.outputs.skip != 'True'
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
