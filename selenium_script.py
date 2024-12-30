@@ -35,10 +35,14 @@ div_element = wait.until(
 )
 
 # Scroll the div to ensure lazy-loaded content is loaded
+
+browser.execute_script("document.body.style.zoom='0.1';")
 time.sleep(10)
 scroll_ele = browser.find_element(By.CSS_SELECTOR, 'div.cm-scroller')
 scroll_height = scroll_ele.get_attribute('scrollHeight')
 browser.execute_script("arguments[0].scrollTo(0, arguments[1]);", scroll_ele, scroll_height)
+
+# Lazy-loading SUCKS!!!
 
 latex = div_element.text
 
@@ -53,6 +57,7 @@ with open("resume.tex", "r+") as file:
         print("No changes detected")
         sys.exit(1)
     else:
+        file.seek(0)
         file.write(latex)
 
 # click on the download button to get the pdf
