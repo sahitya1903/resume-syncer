@@ -36,7 +36,7 @@ div_element = wait.until(
     )
 )
 
-# Scroll the div to ensure lazy-loaded content is loaded
+# Scroll the div to ensure .tex code is copied from the lazy-loaded div
 
 browser.execute_script("document.body.style.zoom='0.1';")
 time.sleep(10)
@@ -54,11 +54,12 @@ if not latex.endswith(r'\end{document}'):
     print('Unable to fetch')
     exit(1)
 
-# if there are changes in latex file, proceed with downloading the pdf
+# if there are changes in latex file, proceed with downloading the pdf, else exit(0)
 with open("resume.tex", "r+") as file:
     if latex == file.read():
         print("No changes detected")
         with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            # don't run next step (git commit) if there're no changes
             print("skip=True", file=fh)
         sys.exit(0)
     else:

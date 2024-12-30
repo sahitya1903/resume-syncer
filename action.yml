@@ -1,6 +1,6 @@
 name: Auto-download resume from overleaf
 description: Fetches a resume pdf from an overleaf and commits it to the repository.
-authon: sbrjt
+author: sbrjt
 
 inputs:
   overleaf_url:

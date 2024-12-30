@@ -5,7 +5,7 @@ This GitHub action automates fetching the latest pdf from overleaf and commits i
 ## Example Usage
 
 ```yaml
-name: Fetch overleaf resume
+name: Fetch Overleaf PDF
 
 on:
   schedule:
@@ -16,10 +16,9 @@ jobs:
   fetch-pdf:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch pdf from overleaf
-        uses: Sbrjt/overleaf-resume-downloader@v1
+      - uses: Sbrjt/overleaf-resume-downloader@v1
         with:
-          overleaf_url: 'replace-with-your-overleaf-url'
+          overleaf_url: 'https://www.overleaf.com/read/your-project-id # Replace with your overleaf-url
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -43,10 +42,24 @@ jobs:
 
 Note: After the action finishes, the Github Pages deployment will start and this may take a while. Do a hard refresh if the pdf gets cached.
 
+# How it works
+
+This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-downloader@v1` in any other GitHub Action. See `action.yml` file. The action takes in 2 inputs: the overleaf url and a github token.
+
+First, it checks out the repo, installs python and selenium, and runs a python script to fetch the pdf.
+
+`selenium_script.py` copies the latex code from overleaf and compares it with `resume.tex`. If there are changes, it finds the download button and clicks it to get the pdf. Otherwise, the action skips the next step.
+
+The next step uses the GitHub token provided in the inputs to push the updated code on your behalf (using the GitHub Actions bot).
+
+The action is intended to run on a scheduled cron job (eg, daily or weekly).
+
+Note: The most trivial solution seems like editing the `.tex` file locally in vscode with some previewer/builder but TeX live is huge and too much of a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
+
 ## Todo (Help Me!)
 
-- Currently, the pdf is updated based on a scheduled cron job. Ideally, we'd like to check whether the pdf has been updated on overleaf before committing it to avoid unnecessary pushes. (Unfortunately, I could not find the last updated field on overleaf.)
+- Lazy loading is sometimes interfering with the copying of latex code.
 
-- I'm using Selenium to fetch the pdf, as using curl didn’t work due to overleaf’s authentication measures on the read-only link. I'm curious if there's a more straightforward solution than this.
+- I'm using Selenium to fetch the pdf, as using `curl` didn’t work due to overleaf’s authentication measures on the read-only link. I'm curious if there's a more straightforward solution than this. (like directly from the payload)
 
-- More logging and error handling
+- More logging, error handling and comments
