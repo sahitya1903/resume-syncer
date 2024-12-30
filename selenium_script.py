@@ -42,7 +42,8 @@ scroll_ele = browser.find_element(By.CSS_SELECTOR, 'div.cm-scroller')
 scroll_height = scroll_ele.get_attribute('scrollHeight')
 browser.execute_script("arguments[0].scrollTo(0, arguments[1]);", scroll_ele, scroll_height)
 
-# Lazy-loading SUCKS!!!
+# Fixme: I'm zooming out to 10% to ensure the entire content of .tex file is loaded; this may not work if the .tex file is longer.
+# I couldn't find a way to deal with lazy loading
 
 latex = div_element.text
 
@@ -55,7 +56,7 @@ if not latex.endswith(r'\end{document}'):
 with open("resume.tex", "r+") as file:
     if latex == file.read():
         print("No changes detected")
-        sys.exit(1)
+        sys.exit(0)
     else:
         file.seek(0)
         file.write(latex)
