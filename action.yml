@@ -27,8 +27,8 @@ runs:
 
     - name: Run Selenium script
       run: |
-      skip=$(python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}")
-      echo "skip=$skip" >> $GITHUB_ENV
+        skip=$(python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}")
+        echo "skip=$skip" >> $GITHUB_ENV
       shell: bash
 
     - name: Commit the PDF file
