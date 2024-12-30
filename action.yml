@@ -26,7 +26,9 @@ runs:
       shell: bash
 
     - name: Run Selenium script
-      run: python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}"
+      run: |
+        set -e
+        python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}"
       shell: bash
 
     - name: Commit the PDF file
@@ -37,7 +39,7 @@ runs:
         pdf_file=$(find . -type f -name "*.pdf" | head -n 1)
         echo "Found file: $pdf_file"
 
-        git add "$pdf_file"
+        git add resume.tex "$pdf_file"
         git commit -m "Resume updated"
         git push
       env:

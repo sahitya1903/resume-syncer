@@ -1,6 +1,6 @@
 import os
-import time
 import sys
+import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -11,7 +11,7 @@ for file in os.listdir(os.getcwd()):
     if file.endswith('.pdf'):
         os.remove(file)
         break
-        # TODO: if possible, do this after commiting the pdf file in github actions
+    # Fixme: If there are other pdf files in the directory, this will randomly delete one of them
 
 # Set Chrome preferences
 options = webdriver.ChromeOptions()
@@ -24,18 +24,47 @@ browser = webdriver.Chrome(options=options)
 
 url = sys.argv[1]
 browser.get(url)
-wait = WebDriverWait(browser, 10)
+wait = WebDriverWait(browser, 60)
 
-# TODO: check for last updated date
+# Fetch the latex code
+div_element = wait.until(
+    lambda driver: driver.find_element(
+        By.CSS_SELECTOR,
+        'div[data-language="latex"]',
+    )
+)
 
-download_link_element = wait.until(
+# Scroll the div to ensure lazy-loaded content is loaded
+time.sleep(10)
+scroll_ele = browser.find_element(By.CSS_SELECTOR, 'div.cm-scroller')
+scroll_height = scroll_ele.get_attribute('scrollHeight')
+browser.execute_script("arguments[0].scrollTo(0, arguments[1]);", scroll_ele, scroll_height)
+
+latex = div_element.text
+
+# Ensure the entire latex code is fetched
+if not latex.endswith(r'\end{document}'):
+    print('Unable to fetch')
+    exit(1)
+
+# if there are changes in latex file, proceed with downloading the pdf
+with open("resume.tex", "r+") as file:
+    if latex == file.read():
+        print("No changes detected")
+        sys.exit(1)
+    else:
+        file.write(latex)
+
+# click on the download button to get the pdf
+download_btn = wait.until(
     lambda driver: driver.find_element(
         By.CSS_SELECTOR,
         'a[aria-label="Download PDF"][data-disabled="false"]',
     )
 )
 
-download_link_element.click()
+download_btn.click()
+print('Pdf downloaded')
 
 time.sleep(5)  # Wait for the download to complete
 browser.quit()
