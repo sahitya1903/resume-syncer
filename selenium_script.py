@@ -6,9 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-print(os.getcwd())
-
-# delete previous pdf file
+# delete the previous pdf file
 for file in os.listdir(os.getcwd()):
     if file.endswith('.pdf'):
         os.remove(file)
@@ -20,7 +18,7 @@ options = webdriver.ChromeOptions()
 options.add_argument('--headless')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_experimental_option("prefs", {"profile.default_content_settings.popups": 0, "download.default_directory": os.getcwd()})
+options.add_experimental_option('prefs', {'profile.default_content_settings.popups': 0, 'download.default_directory': os.getcwd()})
 
 browser = webdriver.Chrome(options=options)
 
@@ -38,11 +36,11 @@ div_element = wait.until(
 
 # Scroll the div to ensure .tex code is copied from the lazy-loaded div
 
-browser.execute_script("document.body.style.zoom='0.1';")
+browser.execute_script('document.body.style.zoom="0.1"')
 time.sleep(10)
 scroll_ele = browser.find_element(By.CSS_SELECTOR, 'div.cm-scroller')
 scroll_height = scroll_ele.get_attribute('scrollHeight')
-browser.execute_script("arguments[0].scrollTo(0, arguments[1]);", scroll_ele, scroll_height)
+browser.execute_script('arguments[0].scrollTo(0, arguments[1]);', scroll_ele, scroll_height)
 
 # Fixme: I'm zooming out to 10% to ensure the entire content of .tex file is loaded; this may not work if the .tex file is longer.
 # I couldn't find a way to deal with lazy loading
@@ -51,20 +49,27 @@ latex = div_element.text
 
 # Ensure the entire latex code is fetched
 if not latex.endswith(r'\end{document}'):
-    print('Unable to fetch')
+    print('Unable to fetch ⚠️')
     exit(1)
 
-# if there are changes in latex file, proceed with downloading the pdf, else exit(0)
-with open("resume.tex", "r+") as file:
-    if latex == file.read():
-        print("No changes detected")
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-            # don't run next step (git commit) if there're no changes
-            print("skip=True", file=fh)
-        sys.exit(0)
-    else:
-        file.seek(0)
-        file.write(latex)
+# if there are no changes in latex file do sys.exit(0) and skip next steps
+try:
+    with open('resume.tex') as file:
+        if latex == file.read():
+            print('No changes detected ✅️')
+
+            # setting github env var: skip=True
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+                print('skip=True', file=fh)
+
+            sys.exit(0)
+
+except FileNotFoundError:
+    print('First run 🏃‍♂️')
+
+# if latex file is not found or if it has changed, write it and download pdf
+with open('resume.tex', 'w') as file:
+    file.write(latex)
 
 # click on the download button to get the pdf
 download_btn = wait.until(
@@ -75,10 +80,10 @@ download_btn = wait.until(
 )
 
 download_btn.click()
-print('Pdf downloaded')
+print('Pdf downloaded 🎉')
 
 time.sleep(5)  # Wait for the download to complete
 browser.quit()
 
 with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-    print("skip=False", file=fh)
+    print('skip=False', file=fh)

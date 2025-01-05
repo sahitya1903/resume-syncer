@@ -10,6 +10,11 @@ inputs:
     required: true
     description: GitHub token for authentication
 
+outputs:
+  pdf_name:
+    description: Name of the PDF downloaded
+    value: ${{ steps.set-output.outputs.pdf_name }}
+
 runs:
   using: 'composite'
   steps:
@@ -32,6 +37,7 @@ runs:
       shell: bash
 
     - name: Commit the PDF file
+      id: set-output
       if: steps.check-flag.outputs.skip != 'True'
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -43,6 +49,8 @@ runs:
         git add resume.tex "$pdf_file"
         git commit -m "Resume updated"
         git push
+
+        echo "pdf_name=${pdf_file}" >> $GITHUB_OUTPUT
       env:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
