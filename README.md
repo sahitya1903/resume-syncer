@@ -24,7 +24,7 @@ jobs:
 
 ## Detailed Steps
 
-1. Create a repo for hosting the resume. Fork this [repo](https://github.com/Sbrjt/resume) to skip steps 4, 5 and 6.
+1. Create a repo for hosting the resume. Fork [this](https://github.com/Sbrjt/resume) repo to skip steps 4, 5 and 6.
 
 1. Go to your overleaf project and grab the read-only link. (Click on Share, turn on link sharing and copy the view-only link).
 
