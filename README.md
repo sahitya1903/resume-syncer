@@ -22,13 +22,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## Detailed Steps
+<details>
+<summary>
+Detailed Steps
+</summary>
 
 1. Create a repo for hosting the resume. Fork [this](https://github.com/Sbrjt/resume) repo to skip steps 4, 5 and 6.
 
 1. Go to your overleaf project and grab the read-only link. (Click on Share, turn on link sharing and copy the view-only link).
 
-1. Create a GitHub Actions workflow file with above code (at .github/workflows/update-resume.yml). Replace with your `overleaf_url`.
+1. Create a GitHub Actions workflow file with above code block (at .github/workflows/update-resume.yml). Replace with your `overleaf_url`.
 
 1. Allow Read and Write permissions for GitHub Actions. (Settings > Actions > General > Workflow permissions > Read and write permissions).
 
@@ -42,7 +45,9 @@ jobs:
 
 Note: After the action finishes, the Github Pages deployment will start and this may take a while. Do a hard refresh if the pdf gets cached.
 
-# How it works
+</details>
+
+## How it works
 
 This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-downloader@v1` in any other GitHub Action. See `action.yml` file. The action takes in 2 inputs: the overleaf url and a github token.
 
@@ -54,7 +59,7 @@ The next step uses the GitHub token provided in the inputs to push the updated c
 
 The action is intended to run on a scheduled cron job (eg, daily or weekly).
 
-Note: The most trivial solution seems like editing the `.tex` file locally in vscode with some previewer/builder but TeX live is huge and too much of a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
+Well, the most trivial solution seems like editing the `.tex` file locally in vscode with some latex previewer/builder but TeX-live is huge and too much of a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
 
 ## Todo (Help Me!)
 
