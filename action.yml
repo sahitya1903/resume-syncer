@@ -48,14 +48,9 @@ runs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
 
-        pdf_file=$(find . -type f -name "*.pdf" | head -n 1)
-        echo "Found file: $pdf_file"
-
-        git add resume.tex "$pdf_file"
+        git add resume.tex resume.pdf
         git commit -m "Resume updated"
         git push
-
-        echo "pdf_name=${pdf_file}" >> $GITHUB_OUTPUT
       env:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
