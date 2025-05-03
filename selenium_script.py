@@ -77,6 +77,7 @@ class Browser(webdriver.Chrome):
         time.sleep(5)  # Wait for the download to complete
         print('Pdf downloaded 🎉')
 
+        # download the pdf in a temp folder, move it to the root and then delete the temp folder
         pdf = os.listdir('temp')[0]
         shutil.copy(f'temp/{pdf}', 'resume.pdf')
 

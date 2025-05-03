@@ -7,6 +7,9 @@ This GitHub action automates fetching the latest pdf from overleaf and commits i
 ```yaml
 name: Fetch Overleaf PDF
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: '0 0 * * *' # Daily at midnight
@@ -27,29 +30,23 @@ jobs:
 Detailed Steps
 </summary>
 
-1. Create a repo for hosting the resume. Fork [this](https://github.com/Sbrjt/resume) repo to skip steps 4, 5 and 6.
+1. Create a repo for hosting the resume. (Alternately, you can fork [this](https://github.com/Sbrjt/resume) template.)
 
 1. Go to your overleaf project and grab the read-only link. (Click on Share, turn on link sharing and copy the view-only link).
 
 1. Create a GitHub Actions workflow file with above code block (at .github/workflows/update-resume.yml). Replace with your `overleaf_url`.
 
-1. Allow Read and Write permissions for GitHub Actions. (Settings > Actions > General > Workflow permissions > Read and write permissions).
-
-1. Enable Github pages for hosting. (Settings > Pages > Select branch > main > Save).
-
 1. Run the action manually once. (Actions > Fetch overleaf resume > Run workflow)
 
-1. Find your hosted resume at `https://<usrname>.github.io/resume/<your-pdf-name>.pdf`. This will sync automatically with your overleaf pdf.
+1. Enable Github pages for hosting. 
 
 1. (Optional) Use [Zapier](https://youtu.be/d5g-pIeoUL4) to sync with google drive. [Eg](https://zapier.com/shared/97c52bfb5e6295840a45c82f90d4e6e7bcd23037).
-
-Note: After the action finishes, the Github Pages deployment will start and this may take a while. Do a hard refresh if the pdf gets cached.
 
 </details>
 
 ## How it works
 
-This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-downloader@v1` in any other GitHub Action. See `action.yml` file. The action takes in 2 inputs: the overleaf url and a github token.
+This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-downloader@v1` in any other GitHub Action. (See `action.yml` file.) The action takes in 2 inputs: the overleaf url and a github token.
 
 First, it checks out the repo, installs python and selenium, and runs a python script to fetch the pdf.
 
@@ -59,12 +56,14 @@ The next step uses the GitHub token provided in the inputs to push the updated c
 
 The action is intended to run on a scheduled cron job (eg, daily or weekly).
 
-Well, the most trivial solution seems like editing the `.tex` file locally in vscode with some latex previewer/builder but TeX-live is huge and too much of a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
+The most trivial solution seems like editing the `.tex` file locally in vscode with some latex previewer/builder but TeX-live is huge and too much of a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
 
 ## Todo (Help Me!)
 
 - Lazy loading is sometimes interfering with the copying of latex code.
 
-- I'm using Selenium to fetch the pdf, as using `curl` didn’t work due to overleaf’s authentication measures on the read-only link. I'm curious if there's a more straightforward solution than this. (like directly from the payload)
+- I'm using Selenium to fetch the pdf, as using `curl` didn’t work due to overleaf’s authentication measures on the read-only link. I'm curious if there's a more straightforward solution than this. (like directly intercepting from the payload)
 
-- More logging, error handling and comments
+- Tokens from the OAuth Playground expire in 1 day, so I couldn't automate the gdrive part.
+
+- Using cache for python and requirements
