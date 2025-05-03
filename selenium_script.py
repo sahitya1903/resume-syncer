@@ -100,8 +100,8 @@ def save_latex_if_updated(latex, filename):
     return True
 
 
-url = 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
-# url = sys.argv[1]
+# url = 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
+url = sys.argv[1]
 
 browser = Browser()
 browser.get(url)
