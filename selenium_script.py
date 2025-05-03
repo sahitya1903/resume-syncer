@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import time
 
@@ -6,12 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-# delete the previous pdf file
-for file in os.listdir(os.getcwd()):
-    if file.endswith('.pdf'):
-        os.remove(file)
-        break
-    # Fixme: If there are other pdf files in the directory, this will randomly delete one of them
+download_path = os.path.abspath(os.path.join(os.getcwd(), 'temp'))
 
 
 class Browser(webdriver.Chrome):
@@ -26,7 +22,7 @@ class Browser(webdriver.Chrome):
             'prefs',
             {
                 'profile.default_content_settings.popups': 0,
-                'download.default_directory': os.getcwd(),
+                'download.default_directory': download_path,
             },
         )
 
@@ -78,9 +74,11 @@ class Browser(webdriver.Chrome):
         )
 
         download_btn.click()
+        time.sleep(5)  # Wait for the download to complete
         print('Pdf downloaded 🎉')
 
-        time.sleep(5)  # Wait for the download to complete
+        pdf = os.listdir('temp')[0]
+        shutil.copy(f'temp/{pdf}', 'resume.pdf')
 
 
 def save_latex_if_updated(latex, filename):

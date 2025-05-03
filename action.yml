@@ -28,15 +28,18 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
+      cache: 'pip'
 
     - name: Install selenium
-      run: pip install selenium
+      run: pip install -r requirements.txt
       shell: bash
 
     - name: Run Selenium script
       id: check-flag
       run: |
-        python ${GITHUB_ACTION_PATH}/selenium_script.py "${{ inputs.overleaf_url }}"
+        mkdir temp
+        python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}"
+        rm -rf temp
       shell: bash
 
     - name: Commit the PDF file
