@@ -31,7 +31,7 @@ runs:
         cache: 'pip'
 
     - name: Install selenium
-      run: pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+      run: pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
       shell: bash
 
     - name: Run Selenium script
