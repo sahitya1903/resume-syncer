@@ -31,14 +31,14 @@ runs:
         cache: 'pip'
 
     - name: Install selenium
-      run: pip install -r "${{ github.action_path }}/requirements.txt"
+      run: pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
       shell: bash
 
     - name: Run Selenium script
       id: check-flag
       run: |
         mkdir temp
-        python "${{ github.action_path }}/selenium_script.py" "${{ inputs.overleaf_url }}"
+        python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}"
         rm -rf temp
       shell: bash
 
