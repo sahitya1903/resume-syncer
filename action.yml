@@ -13,11 +13,6 @@ inputs:
     required: true
     description: GitHub token for authentication
 
-outputs:
-  pdf_name:
-    description: Name of the PDF downloaded
-    value: ${{ steps.set-output.outputs.pdf_name }}
-
 runs:
   using: 'composite'
   steps:
