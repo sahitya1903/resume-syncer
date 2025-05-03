@@ -28,10 +28,8 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
-        cache: 'pip'
 
     - name: Install selenium
-      # run: pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
       run: pip install selenium
       shell: bash
 
