@@ -28,7 +28,7 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
-      cache: 'pip'
+        cache: 'pip'
 
     - name: Install selenium
       run: pip install -r requirements.txt
