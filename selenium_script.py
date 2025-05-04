@@ -1,4 +1,6 @@
+import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -16,8 +18,10 @@ class Browser(webdriver.Chrome):
         # Set Chrome preferences
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
+        options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
         options.add_experimental_option(
             'prefs',
             {
@@ -33,33 +37,32 @@ class Browser(webdriver.Chrome):
         self.get(url)
 
     def fetch_latex(self):
-        # Fetch the latex code
-        div_element = self.wait.until(
+        # wait for the latex to load
+        self.wait.until(
             lambda driver: driver.find_element(
                 By.CSS_SELECTOR,
                 'div[data-language="latex"]',
             )
         )
 
-        # Scroll the div to ensure .tex code is copied from the lazy-loaded div
+        # the latex code is fetched in a websocket request
+        for entry in browser.get_log('performance'):
+            try:
+                message = json.loads(entry['message'])['message']
+                if message['method'] == 'Network.webSocketFrameReceived':
+                    payload = message['params']['response']['payloadData']
 
-        self.execute_script('document.body.style.zoom="0.1"')
-        time.sleep(10)
-        scroll_ele = self.find_element(By.CSS_SELECTOR, 'div.cm-scroller')
-        scroll_height = scroll_ele.get_attribute('scrollHeight')
-        self.execute_script(
-            'arguments[0].scrollTo(0, arguments[1]);',
-            scroll_ele,
-            scroll_height,
-        )
+                    if '\\begin{document}' in payload:
+                        l = eval(
+                            re.search(
+                                r'\+\[null,([\s\S]*?),\d+,\[\],\{\}\]', payload
+                            ).group(1)
+                        )
+                        latex = '\n'.join(l)
+            except:
+                pass
 
-        # Fixme: I'm zooming out to 10% to ensure the entire content of .tex file is loaded; this may not work if the .tex file is longer.
-        # I couldn't find a reliable way to deal with lazy loading
-
-        latex = div_element.text
-
-        # Ensure the entire latex code is fetched
-        if not latex.endswith(r'\end{document}'):
+        if not latex:
             raise ValueError('Unable to fetch ⚠️')
 
         return latex

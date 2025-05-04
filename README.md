@@ -19,7 +19,7 @@ jobs:
   fetch-pdf:
     runs-on: ubuntu-latest
     steps:
-      - uses: Sbrjt/overleaf-resume-downloader@v1
+      - uses: Sbrjt/overleaf-resume-downloader@main
         with:
           overleaf_url: 'https://www.overleaf.com/read/your-project-id # Replace with your overleaf-url
           github_token: ${{ secrets.GITHUB_TOKEN }}
