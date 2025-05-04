@@ -14,15 +14,14 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
         cache: 'pip'
-        cache-dependency-path: "${GITHUB_ACTION_PATH}/requirements.txt"
-      shell: bash
+        cache-dependency-path: "Sbrjt/overleaf-resume-downloader/requirements.txt"
 
     - name: Install selenium
       run: pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
