@@ -45,6 +45,8 @@ class Browser(webdriver.Chrome):
             )
         )
 
+        latex = ''
+
         # the latex code is fetched in a websocket request
         for entry in browser.get_log('performance'):
             try:
@@ -59,6 +61,7 @@ class Browser(webdriver.Chrome):
                             ).group(1)
                         )
                         latex = '\n'.join(l)
+                        break
             except:
                 pass
 
