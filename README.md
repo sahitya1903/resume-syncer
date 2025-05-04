@@ -1,11 +1,11 @@
-Overleaf doesn’t provide a direct, hosted link to PDFs within its projects. Every time you make changes to your resume, you need to manually download the updated pdf for sharing.
+Overleaf is a popular LaTeX editor used for writing resumes. But the free-tier plan lacks Git and cloud drive integration. So every time you update your resume, you have to manually download the latest pdf for sharing - which quickly becomes tedious.
 
-This GitHub action automates fetching the latest pdf from overleaf and commits it to your GitHub repo, from where it can be easily hosted and shared.
+This GitHub action solves this by automatically fetching the latest pdf from overleaf and commits it to your GitHub repo, from where it can be easily hosted and shared.
 
 ## Example Usage
 
 ```yaml
-name: Fetch Overleaf PDF
+name: Sync Overleaf PDF
 
 permissions:
   contents: write
@@ -13,15 +13,18 @@ permissions:
 on:
   schedule:
     - cron: '0 0 * * *' # Daily at midnight
-  workflow_dispatch: # For manual trigger
+  workflow_dispatch:    # For manual trigger
 
 jobs:
-  fetch-pdf:
+  get-pdf:
     runs-on: ubuntu-latest
     steps:
       - uses: Sbrjt/overleaf-resume-downloader@main
         with:
-          overleaf_url: 'https://www.overleaf.com/read/your-project-id # Replace with your overleaf-url
+          overleaf_url: 'https://www.overleaf.com/read/your-project-id' 
+          # Replace with your overleaf sharing link (not your project url!)
+          # Share > link sharing > view-only link
+
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -44,26 +47,30 @@ Detailed Steps
 
 </details>
 
-## How it works
+<details>
+<summary>
+How it works
+</summary>
 
-This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-downloader@v1` in any other GitHub Action. (See `action.yml` file.) The action takes in 2 inputs: the overleaf url and a github token.
+<br>
+
+This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-downloader@v1` in any other GitHub Action. (See `action.yml` file.) The action takes in 2 inputs: your overleaf url and a github token.
 
 First, it checks out the repo, installs python and selenium, and runs a python script to fetch the pdf.
 
-`selenium_script.py` copies the latex code from overleaf and compares it with `resume.tex`. If there are changes, it finds the download button and clicks it to get the pdf. Otherwise, the action skips the next step.
+`selenium_script.py` get the latex code from overleaf by inspecting websockets frames and compares it with the existing `resume.tex`. If there are changes, it finds the download button and clicks it to get the new pdf. Otherwise, the action skips the next step.
 
-The next step uses the GitHub token provided in the inputs to push the updated code on your behalf (using the GitHub Actions bot).
+Then it uses the GitHub token provided in the inputs to push the updated code on your behalf (as GitHub Actions bot).
 
 The action is intended to run on a scheduled cron job (eg, daily or weekly).
 
-The most trivial solution seems like editing the `.tex` file locally in vscode with some latex previewer/builder but TeX-live is huge and too much of a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
 
-## Todo (Help Me!)
+</details>
 
-- Lazy loading is sometimes interfering with the copying of latex code.
+#
 
-- I'm using Selenium to fetch the pdf, as using `curl` didn’t work due to overleaf’s authentication measures on the read-only link. I'm curious if there's a more straightforward solution than this. (like directly intercepting from the payload)
+The most trivial solution might seem like having some latex previewer/builder and editing the `.tex` file locally. But TeX distributions like TeX-live are huge and can be a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
 
-- Tokens from the OAuth Playground expire in 1 day, so I couldn't automate the gdrive part.
+Using Selenium sidesteps Overleaf's protections (which block curl and unauthenticated scrapers) by simulating an actual user session.
 
-- Using cache for python and requirements
+Google Drive tokens from OAuth Playground expire in 1 day, so I couldn't automate the GDrive part.
