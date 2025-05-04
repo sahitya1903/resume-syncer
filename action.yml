@@ -16,15 +16,18 @@ runs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
+    - name: Create requirements.txt
+      run: |
+        echo "selenium" > requirements.txt
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
         cache: 'pip'
-        cache-dependency-path: "Sbrjt/overleaf-resume-downloader/requirements.txt"
 
     - name: Install selenium
-      run: pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
+      run: pip install -r requirements.txt
       shell: bash
 
     - name: Run Selenium script
