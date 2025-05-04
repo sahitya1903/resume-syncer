@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 download_path = os.path.abspath(os.path.join(os.getcwd(), 'temp'))
+os.makedirs(download_path, exist_ok=True)
 
 
 class Browser(webdriver.Chrome):
@@ -83,9 +84,10 @@ class Browser(webdriver.Chrome):
         time.sleep(5)  # Wait for the download to complete
         print('Pdf downloaded 🎉')
 
-        # download the pdf in a temp folder, move it to the root and then delete the temp folder
+        # download the pdf in a temp folder, move it to the root and then delete it
         pdf = os.listdir('temp')[0]
         shutil.copy(f'temp/{pdf}', 'resume.pdf')
+        os.remove(f'temp/{pdf}')
 
 
 def save_latex_if_updated(latex, filename):

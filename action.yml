@@ -33,10 +33,7 @@ runs:
 
     - name: Run Selenium script
       id: check-flag
-      run: |
-        mkdir temp
-        python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}"
-        rm -rf temp
+      run: python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}"
       shell: bash
 
     - name: Commit the PDF file
