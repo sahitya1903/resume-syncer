@@ -20,9 +20,11 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
+        cache: 'pip'
+        cache-dependency-path: "${GITHUB_ACTION_PATH}/requirements.txt"
 
     - name: Install selenium
-      run: pip install selenium
+      run: pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
       shell: bash
 
     - name: Run Selenium script
