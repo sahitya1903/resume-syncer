@@ -19,6 +19,7 @@ runs:
     - name: Create requirements.txt
       run: |
         echo "selenium" > requirements.txt
+      shell: bash 
 
     - name: Set up Python
       uses: actions/setup-python@v5
