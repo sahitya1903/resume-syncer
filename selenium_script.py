@@ -1,6 +1,5 @@
 import json
 import os
-import re
 import shutil
 import sys
 import time
@@ -54,19 +53,22 @@ class Browser(webdriver.Chrome):
                 message = json.loads(entry['message'])['message']
                 if message['method'] == 'Network.webSocketFrameReceived':
                     payload = message['params']['response']['payloadData']
+                    # print(payload)
 
                     if '\\begin{document}' in payload:
-                        l = eval(
-                            re.search(
-                                r'\+\[null,([\s\S]*?),\d+,\[\],\{\}\]', payload
-                            ).group(1)
-                        )
-                        latex = '\n'.join(l)
+                        x = payload.find('[')
+                        arr = json.loads(payload[x:])[1]
+                        latex = '\n'.join(arr)
+
+                        if latex == '':
+                            print(payload)
+                            raise ValueError("Couldn't parse ⚠️")
+
                         break
             except:
                 pass
 
-        if not latex:
+        if latex == '':
             raise ValueError('Unable to fetch ⚠️')
 
         return latex
