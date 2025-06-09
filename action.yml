@@ -19,8 +19,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: Create requirements.txt
-      run: |
-        echo "selenium" > requirements.txt
+      run: echo "selenium" > requirements.txt
       shell: bash 
 
     - name: Set up Python
@@ -53,7 +52,7 @@ runs:
       shell: bash
 
     - name: Upload to google drive
-      if: ${{ inputs.gdrive_link != ''}}
+      if: ${{ inputs.gdrive_link != '' && steps.check-flag.outputs.skip != 'True'}}
       uses: fjogeleit/http-request-action@v1
       with:
         url: https://overleaf-resume-downloader.onrender.com
