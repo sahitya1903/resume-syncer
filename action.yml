@@ -9,6 +9,8 @@ inputs:
   github_token:
     required: true
     description: GitHub token for authentication
+  gdrive_link:
+    description: Google drive link with edit permission
 
 runs:
   using: 'composite'
@@ -49,6 +51,15 @@ runs:
       env:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
+
+    - name: Upload to google drive
+      if: ${{ inputs.gdrive_link != '' && steps.check-flag.outputs.skip != 'True'}}
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: https://overleaf-resume-downloader.onrender.com
+        method: POST
+        data: '{"link":"https://drive.google.com/file/d/1BN7Pz9VWpvKqHR38pd93j50s5NPiba5h/view?usp=drive_link"}'
+        files: '{"file":"resume.pdf"}'
 
 branding:
   icon: 'book'

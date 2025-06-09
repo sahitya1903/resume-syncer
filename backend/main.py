@@ -6,7 +6,7 @@ app = FastAPI()
 
 
 @app.post("/")
-async def replace_file(link: str = Form(...), file: UploadFile = File(...)):
+async def function(link: str = Form(...), file: UploadFile = File(...)):
     try:
         id = findId(link)
         new_file = updateFile(id, file)
