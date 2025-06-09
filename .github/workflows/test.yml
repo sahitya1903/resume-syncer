@@ -12,4 +12,5 @@ jobs:
       - uses: ./ # Uses action.yml in the root directory
         with:
           overleaf_url: 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
+          gdrive_link: 'https://drive.google.com/file/d/1BN7Pz9VWpvKqHR38pd93j50s5NPiba5h/view?usp=drive_link'
           github_token: ${{ secrets.GITHUB_TOKEN }}
