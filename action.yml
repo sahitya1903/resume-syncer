@@ -53,7 +53,7 @@ runs:
       shell: bash
 
     - name: Upload to google drive
-      if: ${{ inputs.gdrive_link != '' && steps.check-flag.outputs.skip != 'True'}}
+      if: ${{ inputs.gdrive_link != ''}}
       uses: fjogeleit/http-request-action@v1
       with:
         url: https://overleaf-resume-downloader.onrender.com
