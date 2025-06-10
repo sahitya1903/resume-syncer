@@ -26,8 +26,8 @@ jobs:
           # Share > link sharing > view-only link
 
           gdrive_link: 'your-gdrive-link'
-        	# Make sure you give edit permission to my service account: 
-					# overleaf-resume-syncer@overleaf-resume-syncer-462412.iam.gserviceaccount.com
+          # Make sure you give edit permission to my service account: 
+          # overleaf-resume-syncer@overleaf-resume-syncer-462412.iam.gserviceaccount.com
 
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
