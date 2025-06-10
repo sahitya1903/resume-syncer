@@ -63,6 +63,7 @@ runs:
 
     - if: steps.drive_upload.outcome == 'success' 
       run: echo ${{ steps.drive_upload.outputs.response }}
+      shell: bash
 
 branding:
   icon: 'book'
