@@ -33,13 +33,13 @@ runs:
       shell: bash
 
     - name: Run Selenium script
-      id: check-flag
+      id: script
       run: python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}"
       shell: bash
 
     - name: Commit the PDF file
       id: set-output
-      if: steps.check-flag.outputs.skip != 'True'
+      if: steps.script.outputs.skip != 'True'
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
@@ -52,13 +52,17 @@ runs:
       shell: bash
 
     - name: Upload to google drive
-      if: ${{ inputs.gdrive_link != '' && steps.check-flag.outputs.skip != 'True'}}
+      id: drive_upload
+      if: ${{ inputs.gdrive_link != '' && steps.script.outputs.skip != 'True'}}
       uses: fjogeleit/http-request-action@v1
       with:
         url: https://overleaf-resume-downloader.onrender.com
         method: POST
         data: '{"link": "${{ inputs.gdrive_link }}"}'
         files: '{"file": "resume.pdf"}'
+
+    - if: steps.drive_upload.outcome == 'success' 
+      run: echo ${{ steps.drive_upload.outputs.response }}
 
 branding:
   icon: 'book'

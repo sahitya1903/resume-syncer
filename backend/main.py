@@ -14,3 +14,6 @@ async def function(link: str = Form(...), file: UploadFile = File(...)):
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"detail": str(e)})
+
+
+# todo: do auth with oidc
