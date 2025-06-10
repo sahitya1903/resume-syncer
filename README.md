@@ -19,11 +19,15 @@ jobs:
   get-pdf:
     runs-on: ubuntu-latest
     steps:
-      - uses: Sbrjt/overleaf-resume-downloader@main
+      - uses: Sbrjt/overleaf-resume-syncer@main
         with:
           overleaf_url: 'https://www.overleaf.com/read/your-project-id' 
           # Replace with your overleaf sharing link (not your project url!)
           # Share > link sharing > view-only link
+
+          gdrive_link: 'your-gdrive-link'
+        	# Make sure you give edit permission to my service account: 
+					# overleaf-resume-syncer@overleaf-resume-syncer-462412.iam.gserviceaccount.com
 
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -37,13 +41,13 @@ Detailed Steps
 
 1. Go to your overleaf project and grab the read-only link. (Click on Share, turn on link sharing and copy the view-only link).
 
-1. Create a GitHub Actions workflow file with above code block (at .github/workflows/update-resume.yml). Replace with your `overleaf_url`.
+1. Create a GitHub Actions workflow file with above code block (at .github/workflows/update-resume.yml).
+
+1. (Optional) Create a file named `resume.pdf` in your Google Drive and share its edit access to `overleaf-resume-syncer@overleaf-resume-syncer-462412.iam.gserviceaccount.com`.
 
 1. Run the action manually once. (Actions > Fetch overleaf resume > Run workflow)
 
 1. Enable Github pages for hosting. 
-
-1. (Optional) Use [Zapier](https://youtu.be/d5g-pIeoUL4) to sync with google drive. [Eg](https://zapier.com/shared/97c52bfb5e6295840a45c82f90d4e6e7bcd23037).
 
 </details>
 
@@ -54,7 +58,7 @@ How it works
 
 <br>
 
-This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-downloader@v1` in any other GitHub Action. (See `action.yml` file.) The action takes in 2 inputs: your overleaf url and a github token.
+This is a GitHub composite action, which can be imported as `Sbrjt/overleaf-resume-syncer@v1` in any other GitHub Action. (See `action.yml` file.) The action takes in 2 inputs: your overleaf url and a github token.
 
 First, it checks out the repo, installs python and selenium, and runs a python script to fetch the pdf.
 
@@ -72,5 +76,3 @@ The action is intended to run on a scheduled cron job (eg, daily or weekly).
 The most trivial solution might seem like having some latex previewer/builder and editing the `.tex` file locally. But TeX distributions like TeX-live are huge and can be a hassle to set up. More info [here](https://mark-wang.com/blog/2022/latex/).
 
 Using Selenium sidesteps Overleaf's protections (which block curl and unauthenticated scrapers) by simulating an actual user session.
-
-Google Drive tokens from OAuth Playground expire in 1 day, so I couldn't automate the GDrive part.
