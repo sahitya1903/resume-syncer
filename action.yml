@@ -60,6 +60,7 @@ runs:
         method: POST
         data: '{"link": "${{ inputs.gdrive_link }}"}'
         files: '{"file": "resume.pdf"}'
+        timeout: 60000
 
     - if: steps.drive_upload.outcome == 'success' 
       run: echo ${{ steps.drive_upload.outputs.response }}
