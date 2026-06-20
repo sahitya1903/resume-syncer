@@ -1,11 +1,14 @@
-name: Test
-on: [workflow_dispatch]
+name: Sync Overleaf Resume
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1' # Every Monday at 00:00 UTC
 
 permissions:
   contents: write
 
 jobs:
-  test-action:
+  sync-resume:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
