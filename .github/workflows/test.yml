@@ -13,6 +13,7 @@ jobs:
         with:
           overleaf_url: 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
           gdrive_link: 'https://drive.google.com/file/d/1BN7Pz9VWpvKqHR38pd93j50s5NPiba5h/view?usp=drive_link'
+          gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
 
