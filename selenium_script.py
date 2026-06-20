@@ -93,17 +93,20 @@ class Browser(webdriver.Chrome):
 
 
 def save_latex_if_updated(latex, filename):
-    # if there are no changes in latex file do sys.exit(0) and skip next steps
+    # Normalize line endings to LF (\n) to prevent CRLF vs LF mismatches
+    latex = latex.replace('\r\n', '\n').replace('\r', '\n')
+
     try:
-        with open(filename) as file:
-            if latex == file.read():
+        with open(filename, 'r', encoding='utf-8') as file:
+            content = file.read().replace('\r\n', '\n').replace('\r', '\n')
+            if latex == content:
                 return False
 
     except FileNotFoundError:
         print('First run 🏃‍♂️')
 
-    # if latex file is not found or if it has changed, write it and download pdf
-    with open('resume.tex', 'w') as file:
+    # Write normalized LF content to file
+    with open('resume.tex', 'w', newline='\n', encoding='utf-8') as file:
         file.write(latex)
 
     return True
