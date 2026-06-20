@@ -52,6 +52,7 @@ runs:
 
         git add resume.tex resume.pdf
         git commit -m "Resume updated"
+        git pull --rebase origin main
         git push
       env:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
