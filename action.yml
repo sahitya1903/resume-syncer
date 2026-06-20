@@ -47,13 +47,25 @@ runs:
       id: set-output
       if: steps.script.outputs.skip != 'True'
       run: |
+        # 1. Temporarily back up the newly compiled Overleaf resume files
+        cp resume.pdf temp_resume.pdf
+        cp resume.tex temp_resume.tex
+
+        # 2. Reset the local repository to match the latest remote main commit
+        git fetch origin main
+        git reset --hard FETCH_HEAD
+
+        # 3. Restore the new Overleaf files (overwriting the older versions)
+        mv temp_resume.pdf resume.pdf
+        mv temp_resume.tex resume.tex
+
+        # 4. Configure Git and commit the changes
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
 
         git add resume.tex resume.pdf
         git commit -m "Resume updated"
-        git pull --rebase origin main
-        git push
+        git push origin HEAD:main
       env:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
