@@ -11,8 +11,8 @@ jobs:
       - uses: actions/checkout@main
       - uses: ./ # Uses action.yml in the root directory
         with:
-          overleaf_url: 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
-          gdrive_link: 'https://drive.google.com/file/d/1BN7Pz9VWpvKqHR38pd93j50s5NPiba5h/view?usp=drive_link'
+          overleaf_url: ${{ secrets.OVERLEAF_URL }}
+          gdrive_link: ${{ secrets.GDRIVE_LINK }}
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
