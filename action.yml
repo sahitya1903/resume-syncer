@@ -11,6 +11,9 @@ inputs:
     description: GitHub token for authentication
   gdrive_link:
     description: Google drive link with edit permission
+  gdrive_service_account_key:
+    description: Service account JSON key string for Google Drive access
+    required: false
 
 runs:
   using: 'composite'
@@ -19,7 +22,10 @@ runs:
       uses: actions/checkout@v4
 
     - name: Create requirements.txt
-      run: echo "selenium" > requirements.txt
+      run: |
+        echo "selenium" > requirements.txt
+        echo "google-api-python-client" >> requirements.txt
+        echo "google-auth" >> requirements.txt
       shell: bash 
 
     - name: Set up Python
@@ -28,7 +34,7 @@ runs:
         python-version: 3.x
         cache: 'pip'
 
-    - name: Install selenium
+    - name: Install dependencies
       run: pip install -r requirements.txt
       shell: bash
 
@@ -52,18 +58,8 @@ runs:
       shell: bash
 
     - name: Upload to google drive
-      id: drive_upload
-      if: ${{ inputs.gdrive_link != '' && steps.script.outputs.skip != 'True'}}
-      uses: fjogeleit/http-request-action@v1
-      with:
-        url: https://overleaf-resume-downloader.onrender.com
-        method: POST
-        data: '{"link": "${{ inputs.gdrive_link }}"}'
-        files: '{"file": "resume.pdf"}'
-        timeout: 60000
-
-    - if: steps.drive_upload.outcome == 'success' 
-      run: echo ${{ steps.drive_upload.outputs.response }}
+      if: ${{ inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True'}}
+      run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py" "${{ inputs.gdrive_link }}" "${{ inputs.gdrive_service_account_key }}"
       shell: bash
 
 branding:

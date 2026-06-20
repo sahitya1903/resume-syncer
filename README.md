@@ -26,8 +26,11 @@ jobs:
           # Share > link sharing > view-only link
 
           gdrive_link: 'your-gdrive-link'
-          # Make sure you give edit permission to my service account: 
-          # overleaf-resume-syncer@overleaf-resume-syncer-462412.iam.gserviceaccount.com
+          # Make sure you share the file with edit permission to your service account email.
+
+          gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
+          # Create a Google Service Account, download the JSON key file, and store its full contents 
+          # as a repository secret named GDRIVE_SERVICE_ACCOUNT.
 
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -43,7 +46,7 @@ Detailed Steps
 
 1. Create a GitHub Actions workflow file with above code block (at .github/workflows/update-resume.yml).
 
-1. (Optional) Create a file named `resume.pdf` in your Google Drive and share its edit access to `overleaf-resume-syncer@overleaf-resume-syncer-462412.iam.gserviceaccount.com`.
+1. (Optional) Create a file named `resume.pdf` in your Google Drive and share its edit access with your Google Service Account email address.
 
 1. Run the action manually once. (Actions > Fetch overleaf resume > Run workflow)
 
