@@ -59,7 +59,10 @@ runs:
 
     - name: Upload to google drive
       if: ${{ inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True'}}
-      run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py" "${{ inputs.gdrive_link }}" "${{ inputs.gdrive_service_account_key }}"
+      run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py"
+      env:
+        GDRIVE_LINK: ${{ inputs.gdrive_link }}
+        GDRIVE_SERVICE_ACCOUNT_KEY: ${{ inputs.gdrive_service_account_key }}
       shell: bash
 
 branding:

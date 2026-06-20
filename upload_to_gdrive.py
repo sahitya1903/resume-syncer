@@ -1,12 +1,17 @@
+import os
 import sys
 import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-# Retrieve arguments
-gdrive_link = sys.argv[1]
-service_account_info_str = sys.argv[2]
+# Retrieve environment variables
+gdrive_link = os.environ.get("GDRIVE_LINK")
+service_account_info_str = os.environ.get("GDRIVE_SERVICE_ACCOUNT_KEY")
+
+if not gdrive_link or not service_account_info_str:
+    print("Error: Missing GDRIVE_LINK or GDRIVE_SERVICE_ACCOUNT_KEY environment variables.")
+    sys.exit(1)
 
 
 def find_id(link: str) -> str:
