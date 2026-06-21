@@ -95,7 +95,7 @@ runs:
         if git diff --cached --quiet; then
           echo "No changes in public/resume.pdf for portfolio repository."
         else
-          git commit -m "chore: update resume.pdf from overleaf-resume-syncer"
+          git commit -m "Updated resume from Overleaf"
           git push origin HEAD
         fi
       shell: bash
