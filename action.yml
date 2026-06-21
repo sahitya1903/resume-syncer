@@ -1,4 +1,4 @@
-name: Auto-download resume from overleaf
+name: ResumeSync
 description: Fetches a resume pdf from an overleaf and commits it to the repository.
 author: sahitya1903
 
@@ -25,7 +25,7 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Create requirements.txt
       run: |
@@ -35,7 +35,7 @@ runs:
       shell: bash 
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: 3.x
         cache: 'pip'
@@ -109,5 +109,5 @@ runs:
       shell: bash
 
 branding:
-  icon: 'book'
+  icon: 'aperture'
   color: 'green'

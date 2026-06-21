@@ -1,8 +1,8 @@
-# Overleaf Resume Syncer 🔄📄
+# ResumeSync 🔄📄
 
 Overleaf is a fantastic LaTeX editor for writing resumes, but the free-tier plan lacks Git integration and cloud drive sync. Every time you update your resume, you have to manually download the new PDF for sharing—which quickly becomes tedious.
 
-**Overleaf Resume Syncer** is a GitHub Action that automatically fetches the latest PDF and LaTeX source from your Overleaf project, commits it to your GitHub repository (useful for GitHub Pages hosting), uploads it directly to your Google Drive, and pushes the compiled PDF to your external portfolio repository to trigger CI/CD pipelines (e.g., Azure Web App deployment).
+**ResumeSync** is a GitHub Action that automatically fetches the latest PDF and LaTeX source from your Overleaf project, commits it to your GitHub repository (useful for GitHub Pages hosting), uploads it directly to your Google Drive, and pushes the compiled PDF to your external portfolio repository to trigger CI/CD pipelines (e.g., Azure Web App deployment).
 
 ---
 
@@ -53,7 +53,7 @@ name: Sync Overleaf Resume
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # Every 4 hours
+    - cron: '0 */6 * * *' # Every 6 hours
   workflow_dispatch:    # Allows manual trigger
 
 permissions:
@@ -63,8 +63,7 @@ jobs:
   sync-resume:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+      - uses: actions/checkout@v7 
       - uses: sahitya1903/overleaf-resume-syncer@main
         with:
           overleaf_url: ${{ secrets.OVERLEAF_URL }}
@@ -75,7 +74,7 @@ jobs:
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
 
           # Optional: Portfolio repository sync configuration
-          portfolio_repo: 'sahitya1903/portfolio'
+          portfolio_repo: ${{ secrets.PORTFOLIO_REPO }}
           portfolio_token: ${{ secrets.PORTFOLIO_TOKEN }}
 ```
 
@@ -109,4 +108,5 @@ In your GitHub repository, navigate to **Settings > Secrets and variables > Acti
 - `OVERLEAF_URL`: The view-only sharing link from Step 1.
 - `GDRIVE_LINK`: The Google Drive file link from Step 2 (e.g. `https://drive.google.com/file/d/.../view?...`).
 - `GDRIVE_SERVICE_ACCOUNT`: The **entire** JSON text content of the downloaded service account key file.
+- `PORTFOLIO_REPO`: The target portfolio repository path (e.g., `username/repo`).
 - `PORTFOLIO_TOKEN`: The Personal Access Token generated in Step 3.
