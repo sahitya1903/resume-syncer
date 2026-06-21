@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7 
-      - uses: sahitya1903/overleaf-resume-syncer@main
+      - uses: sahitya1903/sync-resume@main
         with:
           overleaf_url: ${{ secrets.OVERLEAF_URL }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -110,3 +110,15 @@ In your GitHub repository, navigate to **Settings > Secrets and variables > Acti
 - `GDRIVE_SERVICE_ACCOUNT`: The **entire** JSON text content of the downloaded service account key file.
 - `PORTFOLIO_REPO`: The target portfolio repository path (e.g., `username/repo`).
 - `PORTFOLIO_TOKEN`: The Personal Access Token generated in Step 3.
+
+---
+
+## Credits
+
+This project is inspired by and built upon the work of the original creator. Special thanks to [Sbrjt](https://github.com/Sbrjt) for the original project [overleaf-resume-syncer](https://github.com/Sbrjt/overleaf-resume-syncer).
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
