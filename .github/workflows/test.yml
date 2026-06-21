@@ -18,5 +18,7 @@ jobs:
           gdrive_link: ${{ secrets.GDRIVE_LINK }}
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          portfolio_repo: 'sahitya1903/portfolio'
+          portfolio_token: ${{ secrets.PORTFOLIO_TOKEN }}
 
 
