@@ -8,7 +8,7 @@ Overleaf is a fantastic LaTeX editor for writing resumes, but the free-tier plan
 
 ## Key Features
 
-- **Automated Sync**: Triggers automatically on a cron schedule (every 4 hours) or manually via `workflow_dispatch`.
+- **Automated Sync**: Triggers automatically on a cron schedule (every 24 hours) or manually via `workflow_dispatch`.
 - **Selenium Scraper**: Simulates a real browser session to bypass Overleaf's anti-scraping protections.
 - **Line Ending Normalization**: Automatically normalizes CRLF vs. LF line endings to prevent redundant ghost commits of the binary PDF.
 - **Cross-Repository Sync**: Pushes the compiled `resume.pdf` to a specific directory (like `public/resume.pdf`) in your external portfolio/website repository, triggering automated rebuilds/deployments.
@@ -53,7 +53,7 @@ name: Sync Overleaf Resume
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Every 6 hours
+    - cron: '0 0 * * *' # Every 24 hours
   workflow_dispatch:    # Allows manual trigger
 
 permissions:
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7 
-      - uses: sahitya1903/sync-resume@main
+      - uses: sahitya1903/resume-sync@main
         with:
           overleaf_url: ${{ secrets.OVERLEAF_URL }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -2,7 +2,7 @@ name: Sync Overleaf Resume
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 0 * * *'
 
 permissions:
   contents: write
@@ -15,10 +15,12 @@ jobs:
       - uses: ./ # Uses action.yml in the root directory
         with:
           overleaf_url: ${{ secrets.OVERLEAF_URL }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Optional: Google Drive sync configuration
           gdrive_link: ${{ secrets.GDRIVE_LINK }}
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Optional: Portfolio repository sync configuration
           portfolio_repo: ${{ secrets.PORTFOLIO_REPO }}
           portfolio_token: ${{ secrets.PORTFOLIO_TOKEN }}
-
-
