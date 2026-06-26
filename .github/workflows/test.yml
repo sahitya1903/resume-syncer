@@ -1,4 +1,4 @@
-name: Sync Overleaf Resume
+name: Resume Syncer
 on:
   workflow_dispatch:
   schedule:

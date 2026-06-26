@@ -1,5 +1,5 @@
-name: ResumeSync
-description: Fetches a resume pdf from an overleaf and commits it to the repository.
+name: Overleaf Resume Syncer
+description: Syncs resume.pdf and resume.tex from Overleaf to GitHub, with optional Google Drive and external repository upload.
 author: sahitya1903
 
 inputs:

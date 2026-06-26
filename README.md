@@ -1,8 +1,8 @@
-# ResumeSync 🔄📄
+# Resume Syncer
 
 Overleaf is a fantastic LaTeX editor for writing resumes, but the free-tier plan lacks Git integration and cloud drive sync. Every time you update your resume, you have to manually download the new PDF for sharing—which quickly becomes tedious.
 
-**ResumeSync** is a GitHub Action that automatically fetches the latest PDF and LaTeX source from your Overleaf project, commits it to your GitHub repository (useful for GitHub Pages hosting), uploads it directly to your Google Drive, and pushes the compiled PDF to your external portfolio repository to trigger CI/CD pipelines (e.g., Azure Web App deployment).
+**Resume Syncer** is a GitHub Action that automatically fetches the latest PDF and LaTeX source from your Overleaf project, commits it to your GitHub repository (useful for GitHub Pages hosting), uploads it directly to your Google Drive, and pushes the compiled PDF to your external portfolio repository to trigger CI/CD pipelines (e.g., Azure Web App deployment).
 
 ---
 
@@ -49,7 +49,7 @@ Overleaf is a fantastic LaTeX editor for writing resumes, but the free-tier plan
 Create a workflow file (e.g. `.github/workflows/sync-resume.yml`):
 
 ```yaml
-name: Sync Overleaf Resume
+name: Resume Syncer
 
 on:
   schedule:
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7 
-      - uses: sahitya1903/resume-sync@v1
+      - uses: sahitya1903/resume-syncer@v1
         with:
           overleaf_url: ${{ secrets.OVERLEAF_URL }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
