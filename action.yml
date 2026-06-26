@@ -29,9 +29,9 @@ runs:
 
     - name: Create requirements.txt
       run: |
-        echo "selenium" > requirements.txt
-        echo "google-api-python-client" >> requirements.txt
-        echo "google-auth" >> requirements.txt
+        echo "selenium>=4.0.0,<5.0.0" > requirements.txt
+        echo "google-api-python-client>=2.0.0,<3.0.0" >> requirements.txt
+        echo "google-auth>=2.0.0,<3.0.0" >> requirements.txt
       shell: bash 
 
     - name: Set up Python

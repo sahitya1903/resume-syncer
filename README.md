@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7 
-      - uses: sahitya1903/resume-sync@main
+      - uses: sahitya1903/resume-sync@v1
         with:
           overleaf_url: ${{ secrets.OVERLEAF_URL }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
