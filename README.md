@@ -2,7 +2,11 @@
 
 Overleaf is a fantastic LaTeX editor for writing resumes, but the free-tier plan lacks Git integration and cloud drive sync. Every time you update your resume, you have to manually download the new PDF for sharing—which quickly becomes tedious.
 
-**Resume Syncer** is a GitHub Action that automatically fetches the latest PDF and LaTeX source from your Overleaf project, commits it to your GitHub repository (useful for GitHub Pages hosting), uploads it directly to your Google Drive, and pushes the compiled PDF to your external portfolio repository to trigger CI/CD pipelines (e.g., Azure Web App deployment).
+**Resume Syncer** is a fully self-contained, serverless GitHub Action that automatically fetches the latest PDF and LaTeX source from your Overleaf project, commits it to your GitHub repository (useful for GitHub Pages hosting), uploads it directly to your Google Drive, and pushes the compiled PDF to your external portfolio repository to trigger CI/CD pipelines (e.g., Azure Web App deployment).
+
+> [!IMPORTANT]
+> **Privacy & Security Best Practice**: Storing your PDF resume in a public GitHub repository exposes your personal contact details (phone, email, home address) to scrapers, bots, and search engines. 
+> To protect your privacy, we recommend running this action in a **private repository** to safely archive your LaTeX source and PDF history, while using the built-in **Google Drive Sync** feature to update a public-facing resume link.
 
 ---
 
@@ -12,7 +16,7 @@ Overleaf is a fantastic LaTeX editor for writing resumes, but the free-tier plan
 - **Selenium Scraper**: Simulates a real browser session to bypass Overleaf's anti-scraping protections.
 - **Line Ending Normalization**: Automatically normalizes CRLF vs. LF line endings to prevent redundant ghost commits of the binary PDF.
 - **Cross-Repository Sync**: Pushes the compiled `resume.pdf` to a specific directory (like `public/resume.pdf`) in your external portfolio/website repository, triggering automated rebuilds/deployments.
-- **Direct Google Drive Sync**: Updates your existing resume PDF in-place on Google Drive—eliminating dependency on any external web hosting services.
+- **Direct Google Drive Sync**: Updates your existing resume PDF in-place on Google Drive using a self-contained Python script within the runner—eliminating the need to host any external backend servers or expose public API endpoints.
 - **Conflict-Free Git Pushing**: Uses a robust backup-reset-restore sequence to bypass git merge/rebase conflicts on binary PDF files, ensuring the remote repository is always safely updated.
 - **Secrets-Driven Security**: Sensitive links and credentials are kept private using GitHub Secrets.
 
@@ -110,6 +114,18 @@ In your GitHub repository, navigate to **Settings > Secrets and variables > Acti
 - `GDRIVE_SERVICE_ACCOUNT`: The **entire** JSON text content of the downloaded service account key file.
 - `PORTFOLIO_REPO`: The target portfolio repository path (e.g., `username/repo`).
 - `PORTFOLIO_TOKEN`: The Personal Access Token generated in Step 3.
+
+### Step 5: Local Clutter Prevention (.gitignore)
+Since the Action compiles and updates the resume files dynamically, you might want to prevent these auto-generated files from cluttering your local development workspace. 
+
+You can safely add the following lines to your local `.gitignore`:
+```gitignore
+# Ignore auto-synced resume files locally
+resume.pdf
+resume.tex
+temp/
+```
+The GitHub Action is configured to force-add (`git add -f`) these files during the sync, so they will still be committed to the remote repository successfully even if they are in your `.gitignore`.
 
 ---
 

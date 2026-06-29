@@ -69,7 +69,7 @@ runs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
 
-        git add resume.tex resume.pdf
+        git add -f resume.tex resume.pdf
         git commit -m "Resume updated"
         git push origin HEAD:main
       env:
