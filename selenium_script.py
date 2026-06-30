@@ -17,7 +17,7 @@ class Browser(webdriver.Chrome):
 
         # Set Chrome preferences
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
+        options.add_argument('--headless=new')
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
@@ -48,7 +48,7 @@ class Browser(webdriver.Chrome):
         latex = ''
 
         # the latex code is fetched in a websocket request
-        for entry in browser.get_log('performance'):
+        for entry in self.get_log('performance'):
             try:
                 message = json.loads(entry['message'])['message']
                 if message['method'] == 'Network.webSocketFrameReceived':
@@ -83,13 +83,29 @@ class Browser(webdriver.Chrome):
         )
 
         download_btn.click()
-        time.sleep(5)  # Wait for the download to complete
+
+        # Wait for the download to complete robustly
+        timeout = 30
+        start_time = time.time()
+        downloaded_file = None
+
+        while time.time() - start_time < timeout:
+            files = os.listdir(download_path)
+            # Filter out in-progress chrome downloads
+            completed_files = [f for f in files if not f.endswith('.crdownload') and not f.endswith('.tmp')]
+            if completed_files:
+                downloaded_file = completed_files[0]
+                break
+            time.sleep(1)
+
+        if not downloaded_file:
+            raise FileNotFoundError("PDF download timed out or failed ⚠️")
+
         print('Pdf downloaded 🎉')
 
-        # download the pdf in a temp folder, move it to the root and then delete it
-        pdf = os.listdir('temp')[0]
-        shutil.copy(f'temp/{pdf}', 'resume.pdf')
-        os.remove(f'temp/{pdf}')
+        # Move the pdf to the root and clean up
+        shutil.copy(os.path.join(download_path, downloaded_file), 'resume.pdf')
+        os.remove(os.path.join(download_path, downloaded_file))
 
 
 def save_latex_if_updated(latex, filename):
@@ -97,9 +113,9 @@ def save_latex_if_updated(latex, filename):
     latex = latex.replace('\r\n', '\n').replace('\r', '\n')
 
     try:
+        # Python's universal newlines mode (default) automatically translates CRLF/CR to LF (\n) on read
         with open(filename, 'r', encoding='utf-8') as file:
-            content = file.read().replace('\r\n', '\n').replace('\r', '\n')
-            if latex == content:
+            if latex == file.read():
                 return False
 
     except FileNotFoundError:
@@ -116,28 +132,29 @@ def save_latex_if_updated(latex, filename):
 url = sys.argv[1]
 
 browser = Browser()
-browser.get(url)
-
 try:
-    latex = browser.fetch_latex()
-except Exception as e:
-    print(e)
-    sys.exit(1)
+    browser.get(url)
 
-changes_detected = save_latex_if_updated(latex, 'resume.tex')
+    try:
+        latex = browser.fetch_latex()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
-if not changes_detected:
-    print('No changes detected ✅️')
+    changes_detected = save_latex_if_updated(latex, 'resume.tex')
 
-    # setting github env var: skip=True
+    if not changes_detected:
+        print('No changes detected ✅️')
+
+        # setting github env var: skip=True
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            fh.write('skip=True\n')
+
+        sys.exit(0)
+
+    browser.download_pdf()
+
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        fh.write('skip=True\n')
-
-    sys.exit(0)
-
-browser.download_pdf()
-
-browser.quit()
-
-with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-    fh.write('skip=False\n')
+        fh.write('skip=False\n')
+finally:
+    browser.quit()

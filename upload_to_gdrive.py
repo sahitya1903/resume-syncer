@@ -15,13 +15,28 @@ if not gdrive_link or not service_account_info_str:
 
 
 def find_id(link: str) -> str:
-    # Find the id in the link (e.g. 'https://drive.google.com/file/d/<id>/view?...')
+    link = link.strip()
+    
+    # If the user passed a raw 33+ character alphanumeric/dash/underscore ID directly
+    if "/" not in link and "?" not in link and len(link) >= 20:
+        return link
+
+    # E.g., 'https://drive.google.com/file/d/<id>/view?...'
     if "/d/" in link:
         start = link.find("/d/") + 3
         end = link.find("/", start)
         if end == -1:
             return link[start:]
         return link[start:end]
+
+    # E.g., 'https://drive.google.com/open?id=<id>'
+    if "id=" in link:
+        start = link.find("id=") + 3
+        end = link.find("&", start)
+        if end == -1:
+            return link[start:]
+        return link[start:end]
+
     raise ValueError(f"Could not parse file ID from link: {link}")
 
 
@@ -38,6 +53,10 @@ try:
 
     # Build drive client with static discovery to avoid network overhead
     drive = build('drive', 'v3', credentials=credentials, static_discovery=True)
+
+    # Check if the PDF file exists before trying to upload
+    if not os.path.exists('resume.pdf'):
+        raise FileNotFoundError("resume.pdf not found in the workspace root. Please ensure the Selenium script ran and downloaded the file successfully.")
 
     # Use MediaFileUpload to upload the file directly from the filesystem
     media = MediaFileUpload(

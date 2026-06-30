@@ -27,21 +27,13 @@ runs:
     - name: Checkout repo
       uses: actions/checkout@v7
 
-    - name: Create requirements.txt
-      run: |
-        echo "selenium>=4.0.0,<5.0.0" > requirements.txt
-        echo "google-api-python-client>=2.0.0,<3.0.0" >> requirements.txt
-        echo "google-auth>=2.0.0,<3.0.0" >> requirements.txt
-      shell: bash 
-
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
         python-version: 3.x
-        cache: 'pip'
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: pip install -r "${{ github.action_path }}/requirements.txt"
       shell: bash
 
     - name: Run Selenium script
@@ -57,23 +49,41 @@ runs:
         cp resume.pdf temp_resume.pdf
         cp resume.tex temp_resume.tex
 
-        # 2. Reset the local repository to match the latest remote main commit
-        git fetch origin main
+        # 2. Determine target branch dynamically (fallback to main)
+        BRANCH_NAME="${GITHUB_REF_NAME}"
+        if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "HEAD" ]; then
+          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+        fi
+
+        # 3. Reset the local repository to match the latest remote commit on that branch
+        git fetch origin "$BRANCH_NAME"
         git reset --hard FETCH_HEAD
 
-        # 3. Restore the new Overleaf files (overwriting the older versions)
+        # 4. Restore the new Overleaf files (overwriting the older versions)
         mv temp_resume.pdf resume.pdf
         mv temp_resume.tex resume.tex
 
-        # 4. Configure Git and commit the changes
+        # 5. Configure Git and commit the changes
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
 
         git add -f resume.tex resume.pdf
-        git commit -m "Resume updated"
-        git push origin HEAD:main
+        if git diff --cached --quiet; then
+          echo "No changes to commit."
+        else
+          git commit -m "Resume updated"
+          git push origin "HEAD:$BRANCH_NAME"
+        fi
       env:
         GITHUB_TOKEN: '${{ inputs.github_token }}'
+      shell: bash
+
+    - name: Upload to google drive
+      if: ${{ inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True'}}
+      run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py"
+      env:
+        GDRIVE_LINK: ${{ inputs.gdrive_link }}
+        GDRIVE_SERVICE_ACCOUNT_KEY: ${{ inputs.gdrive_service_account_key }}
       shell: bash
 
     - name: Push resume.pdf to portfolio repository
@@ -98,14 +108,6 @@ runs:
           git commit -m "Updated resume from Overleaf"
           git push origin HEAD
         fi
-      shell: bash
-
-    - name: Upload to google drive
-      if: ${{ inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True'}}
-      run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py"
-      env:
-        GDRIVE_LINK: ${{ inputs.gdrive_link }}
-        GDRIVE_SERVICE_ACCOUNT_KEY: ${{ inputs.gdrive_service_account_key }}
       shell: bash
 
 branding:

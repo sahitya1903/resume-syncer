@@ -41,7 +41,7 @@ Overleaf is a fantastic LaTeX editor for writing resumes, but the free-tier plan
 | :--- | :--- | :--- |
 | `overleaf_url` | Your Overleaf view-only sharing link (Share -> Turn on link sharing -> view-only link). | **Yes** |
 | `github_token` | The GitHub token for authentication (use `${{ secrets.GITHUB_TOKEN }}`). | **Yes** |
-| `gdrive_link` | Sharing link to the specific PDF file in your Google Drive to be updated. | No |
+| `gdrive_link` | Sharing link or raw File ID of the specific PDF file in your Google Drive to be updated. | No |
 | `gdrive_service_account_key` | Entire JSON content of your Google Service Account credentials. | No |
 | `portfolio_repo` | Target portfolio repository path (e.g., `username/repo`). | No |
 | `portfolio_token` | GitHub Personal Access Token (PAT) with write access to target repository. | No |
@@ -110,7 +110,7 @@ If you want to sync your resume directly to your portfolio repository:
 In your GitHub repository, navigate to **Settings > Secrets and variables > Actions** and add the following repository secrets:
 
 - `OVERLEAF_URL`: The view-only sharing link from Step 1.
-- `GDRIVE_LINK`: The Google Drive file link from Step 2 (e.g. `https://drive.google.com/file/d/.../view?...`).
+- `GDRIVE_LINK`: The Google Drive file link from Step 2 (e.g. `https://drive.google.com/file/d/.../view?...`) or the raw File ID directly.
 - `GDRIVE_SERVICE_ACCOUNT`: The **entire** JSON text content of the downloaded service account key file.
 - `PORTFOLIO_REPO`: The target portfolio repository path (e.g., `username/repo`).
 - `PORTFOLIO_TOKEN`: The Personal Access Token generated in Step 3.
