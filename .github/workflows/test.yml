@@ -21,6 +21,6 @@ jobs:
           gdrive_link: ${{ secrets.GDRIVE_LINK }}
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
 
-          # Optional: Portfolio repository sync configuration
-          portfolio_repo: ${{ secrets.PORTFOLIO_REPO }}
-          portfolio_token: ${{ secrets.PORTFOLIO_TOKEN }}
+          # Optional: External repository sync configuration
+          external_repo: ${{ secrets.EXTERNAL_REPO }}
+          external_token: ${{ secrets.EXTERNAL_TOKEN }}
