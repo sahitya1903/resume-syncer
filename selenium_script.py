@@ -11,6 +11,21 @@ from selenium.webdriver.support.ui import WebDriverWait
 download_path = os.path.abspath(os.path.join(os.getcwd(), 'temp'))
 os.makedirs(download_path, exist_ok=True)
 
+def find_latex_array(data):
+    if isinstance(data, list):
+        if all(isinstance(item, str) for item in data) and any('\\begin{document}' in item for item in data):
+            return data
+        for item in data:
+            res = find_latex_array(item)
+            if res is not None:
+                return res
+    elif isinstance(data, dict):
+        for val in data.values():
+            res = find_latex_array(val)
+            if res is not None:
+                return res
+    return None
+
 
 class Browser(webdriver.Chrome):
     def __init__(self):
@@ -33,9 +48,6 @@ class Browser(webdriver.Chrome):
         super().__init__(options=options)
         self.wait = WebDriverWait(self, 60)
 
-    def open(self, url):
-        self.get(url)
-
     def fetch_latex(self):
         # wait for the latex to load
         self.wait.until(
@@ -46,6 +58,7 @@ class Browser(webdriver.Chrome):
         )
 
         latex = ''
+        decoder = json.JSONDecoder()
 
         # the latex code is fetched in a websocket request
         for entry in self.get_log('performance'):
@@ -56,15 +69,13 @@ class Browser(webdriver.Chrome):
                     # print(payload)
 
                     if '\\begin{document}' in payload:
-                        x = payload.find('[')
-                        arr = json.loads(payload[x:])[1]
-                        latex = '\n'.join(arr)
-
-                        if latex == '':
-                            print(payload)
-                            raise ValueError("Couldn't parse ⚠️")
-
-                        break
+                        start_idx = min((payload.find(c) for c in ('[', '{') if payload.find(c) != -1), default=-1)
+                        if start_idx != -1:
+                            data, _ = decoder.raw_decode(payload[start_idx:])
+                            arr = find_latex_array(data)
+                            if arr:
+                                latex = '\n'.join(arr)
+                                break
             except:
                 pass
 
@@ -74,6 +85,13 @@ class Browser(webdriver.Chrome):
         return latex
 
     def download_pdf(self):
+        # Clear the download path first to remove any stale files from previous runs
+        for f in os.listdir(download_path):
+            try:
+                os.remove(os.path.join(download_path, f))
+            except OSError:
+                pass
+
         # click on the download button to get the pdf
         download_btn = self.wait.until(
             lambda driver: driver.find_element(
@@ -103,33 +121,30 @@ class Browser(webdriver.Chrome):
 
         print('Pdf downloaded 🎉')
 
-        # Move the pdf to the root and clean up
-        shutil.copy(os.path.join(download_path, downloaded_file), 'resume.pdf')
-        os.remove(os.path.join(download_path, downloaded_file))
-
+        # Move the pdf to the root
+        shutil.move(os.path.join(download_path, downloaded_file), 'resume.pdf')
 
 def save_latex_if_updated(latex, filename):
-    # Normalize line endings to LF (\n) to prevent CRLF vs LF mismatches
-    latex = latex.replace('\r\n', '\n').replace('\r', '\n')
-
     try:
-        # Python's universal newlines mode (default) automatically translates CRLF/CR to LF (\n) on read
         with open(filename, 'r', encoding='utf-8') as file:
             if latex == file.read():
                 return False
 
     except FileNotFoundError:
-        print('First run 🏃‍♂️')
+        print('First run 🏃♂️')
 
-    # Write normalized LF content to file
-    with open('resume.tex', 'w', newline='\n', encoding='utf-8') as file:
+    with open(filename, 'w', encoding='utf-8') as file:
         file.write(latex)
 
     return True
 
-
-# url = 'https://www.overleaf.com/read/nsgsskwncdmy#a859ac'
+if len(sys.argv) < 2:
+    print("Error: Missing overleaf URL argument.")
+    print("Usage: python selenium_script.py <overleaf_url>")
+    sys.exit(1)
 url = sys.argv[1]
+
+# url = 'https://www.overleaf.com/read/xgkptdvgqhps#f17f92'
 
 browser = Browser()
 try:
@@ -147,14 +162,18 @@ try:
         print('No changes detected ✅️')
 
         # setting github env var: skip=True
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-            fh.write('skip=True\n')
+        github_output = os.environ.get('GITHUB_OUTPUT')
+        if github_output:
+            with open(github_output, 'a', encoding='utf-8') as fh:
+                fh.write('skip=True\n')
 
         sys.exit(0)
 
     browser.download_pdf()
 
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        fh.write('skip=False\n')
+    github_output = os.environ.get('GITHUB_OUTPUT')
+    if github_output:
+        with open(github_output, 'a', encoding='utf-8') as fh:
+            fh.write('skip=False\n')
 finally:
     browser.quit()

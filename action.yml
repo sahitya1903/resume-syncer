@@ -14,10 +14,10 @@ inputs:
   gdrive_service_account_key:
     description: Service account JSON key string for Google Drive access
     required: false
-  portfolio_repo:
-    description: Target portfolio repository (e.g., username/repo)
+  external_repo:
+    description: Target external repository (e.g., username/repo)
     required: false
-  portfolio_token:
+  external_token:
     description: GitHub Personal Access Token (PAT) with write access to target repository
     required: false
 
@@ -86,24 +86,24 @@ runs:
         GDRIVE_SERVICE_ACCOUNT_KEY: ${{ inputs.gdrive_service_account_key }}
       shell: bash
 
-    - name: Push resume.pdf to portfolio repository
-      if: ${{ inputs.portfolio_repo != '' && inputs.portfolio_token != '' && steps.script.outputs.skip != 'True' }}
+    - name: Push resume.pdf to external repository
+      if: ${{ inputs.external_repo != '' && inputs.external_token != '' && steps.script.outputs.skip != 'True' }}
       run: |
-        # Clone the target portfolio repository
-        git clone "https://x-access-token:${{ inputs.portfolio_token }}@github.com/${{ inputs.portfolio_repo }}.git" temp_portfolio
+        # Clone the target external repository
+        git clone "https://x-access-token:${{ inputs.external_token }}@github.com/${{ inputs.external_repo }}.git" temp_external
 
-        # Copy the updated resume.pdf to public/resume.pdf in the portfolio repository
-        mkdir -p temp_portfolio/public
-        cp resume.pdf temp_portfolio/public/resume.pdf
+        # Copy the updated resume.pdf to public/resume.pdf in the external repository
+        mkdir -p temp_external/public
+        cp resume.pdf temp_external/public/resume.pdf
 
         # Commit and push changes if any
-        cd temp_portfolio
+        cd temp_external
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git config user.name "github-actions[bot]"
         git add public/resume.pdf
 
         if git diff --cached --quiet; then
-          echo "No changes in public/resume.pdf for portfolio repository."
+          echo "No changes in public/resume.pdf for external repository."
         else
           git commit -m "Updated resume from Overleaf"
           git push origin HEAD
