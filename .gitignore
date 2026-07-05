@@ -2,3 +2,4 @@ resume.pdf
 resume.tex
 temp/
 __pycache__/
+.secrets

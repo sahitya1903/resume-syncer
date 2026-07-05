@@ -96,38 +96,48 @@ In your GitHub repository, navigate to **Settings > Secrets and variables > Acti
 - `EXTERNAL_REPO`: The target external repository path (e.g., `username/repo`).
 - `EXTERNAL_TOKEN`: The Personal Access Token generated in Step 3.
 
+> [!IMPORTANT]
+> Always use **GitHub Secrets** (and not GitHub Variables) for sensitive values like `GDRIVE_SERVICE_ACCOUNT` (which contains a private key) and `OVERLEAF_URL` (which contains a view token), to ensure they remain encrypted and are masked in workflow logs.
+
 ### Step 5: Ignore Local Synced Files
 Add these lines to your `.gitignore` to prevent auto-generated files from cluttering your local workspace (the workflow will still commit them using force-add):
 ```gitignore
 resume.pdf
 resume.tex
 temp/
+.secrets
 ```
 
 ---
 
 ## Local Execution & Debugging
 
-You can run the Python scripts locally on your machine for testing or debugging:
+You can run the sync pipeline locally using the provided automated script `run_local.py`:
 
 1. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **Run Selenium compiler script:**
-   ```bash
-   python selenium_script.py "<YOUR_OVERLEAF_VIEW_ONLY_LINK>"
+2. **Create a `.secrets` file** in the root of the project to store your credentials (this file is already gitignored):
+   ```ini
+   OVERLEAF_URL=https://www.overleaf.com/read/xxxxxx
+   GDRIVE_LINK=https://drive.google.com/file/d/yyyyyy/view?usp=drive_link
+   
+   # Wrap the entire JSON block in single quotes (even if it spans multiple lines)
+   GDRIVE_SERVICE_ACCOUNT='{
+     "type": "service_account",
+     "project_id": "...",
+     "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+     ...
+   }'
    ```
-   This compiles and downloads `resume.pdf`, and outputs `resume.tex`. The script handles missing environment variables (like `GITHUB_OUTPUT`) and checks CLI arguments to ensure it doesn't crash during local runs.
 
-3. **Run Google Drive upload script (Optional):**
+3. **Run the local sync script:**
    ```bash
-   # Set mock or real credentials in your environment variables
-   $env:GDRIVE_LINK="YOUR_GOOGLE_DRIVE_SHARE_LINK"
-   $env:GDRIVE_SERVICE_ACCOUNT_KEY='YOUR_SERVICE_ACCOUNT_JSON'
-   python upload_to_gdrive.py
+   python run_local.py
    ```
+   This script automatically reads your `.secrets` file, parses the multi-line service account key, downloads the files using your local Chrome browser, and syncs them to Google Drive if credentials are provided.
 
 ---
 
