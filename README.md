@@ -1,6 +1,6 @@
 # Resume Syncer
 
-**Resume Syncer** is a serverless GitHub Action that automatically syncs your latest PDF and LaTeX source from Overleaf to your GitHub repository, Google Drive, and external repositories (to trigger website rebuilds).
+**Resume Syncer** is a serverless GitHub Action that automatically syncs your latest PDF and LaTeX source from Overleaf to your GitHub repository and, optionally, Google Drive.
 
 > [!IMPORTANT]
 > Run this action in a **private repository** to protect your personal contact details, while using the **Google Drive Sync** feature to update a public-facing resume link.
@@ -12,7 +12,6 @@
 - **Automated Sync & Diffing**: Runs on a cron schedule or manual trigger, comparing the LaTeX source to skip execution if no changes are detected.
 - **Selenium WebSocket Scraper**: Uses headless Chrome to bypass Overleaf protections and recursively extract the LaTeX code from WebSocket performance logs.
 - **Conflict-Free Git Commits**: Uses a temporary backup-reset-restore sequence to commit the new PDF and LaTeX source without merge/rebase conflicts.
-- **Cross-Repository Sync**: Pushes the compiled PDF directly to an external repository (e.g., website/portfolio) to trigger rebuilds.
 - **Direct Google Drive Sync**: Updates your public resume PDF in-place on Google Drive using a self-contained Python script.
 - **Local Debugging Support**: Built to run locally on your machine for easy testing and debugging without crashing on missing GitHub environments.
 
@@ -26,8 +25,6 @@
 | `github_token` | The GitHub token for authentication (use `${{ secrets.GITHUB_TOKEN }}`). | **Yes** |
 | `gdrive_link` | Sharing link or raw File ID of the specific PDF file in your Google Drive to be updated. | No |
 | `gdrive_service_account_key` | Entire JSON content of your Google Service Account credentials. | No |
-| `external_repo` | Target external repository path (e.g., `username/repo`). | No |
-| `external_token` | GitHub Personal Access Token (PAT) with write access to target repository. | No |
 
 ---
 
@@ -59,10 +56,6 @@ jobs:
           # Optional: Google Drive sync configuration
           gdrive_link: ${{ secrets.GDRIVE_LINK }}
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
-
-          # Optional: External repository sync configuration
-          external_repo: ${{ secrets.EXTERNAL_REPO }}
-          external_token: ${{ secrets.EXTERNAL_TOKEN }}
 ```
 
 ---
@@ -81,25 +74,17 @@ If you want to sync your resume to Google Drive:
 5. Create a blank PDF file named `resume.pdf` in your Google Drive. 
 6. Share this file with the Service Account's email address (e.g. `your-uploader@...iam.gserviceaccount.com`) giving it **Editor** permissions. Copy the share link of the file.
 
-### Step 3: Set up External Repository Sync (Optional)
-If you want to sync your resume directly to your external repository:
-1. Go to your GitHub account **Settings > Developer Settings > Personal Access Tokens (classic or fine-grained)**.
-2. Generate a new token with **Write** permissions (specifically `contents:write` for target repo).
-3. Copy this token.
-
-### Step 4: Add Secrets to GitHub
+### Step 3: Add Secrets to GitHub
 In your GitHub repository, navigate to **Settings > Secrets and variables > Actions** and add the following repository secrets:
 
 - `OVERLEAF_URL`: The view-only sharing link from Step 1.
 - `GDRIVE_LINK`: The Google Drive file link from Step 2 (e.g. `https://drive.google.com/file/d/.../view?...`) or the raw File ID directly.
 - `GDRIVE_SERVICE_ACCOUNT`: The **entire** JSON text content of the downloaded service account key file.
-- `EXTERNAL_REPO`: The target external repository path (e.g., `username/repo`).
-- `EXTERNAL_TOKEN`: The Personal Access Token generated in Step 3.
 
 > [!IMPORTANT]
 > Always use **GitHub Secrets** (and not GitHub Variables) for sensitive values like `GDRIVE_SERVICE_ACCOUNT` (which contains a private key) and `OVERLEAF_URL` (which contains a view token), to ensure they remain encrypted and are masked in workflow logs.
 
-### Step 5: Ignore Local Synced Files
+### Step 4: Ignore Local Synced Files
 Add these lines to your `.gitignore` to prevent auto-generated files from cluttering your local workspace (the workflow will still commit them using force-add):
 ```gitignore
 resume.pdf

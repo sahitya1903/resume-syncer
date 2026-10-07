@@ -20,7 +20,3 @@ jobs:
           # Optional: Google Drive sync configuration
           gdrive_link: ${{ secrets.GDRIVE_LINK }}
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
-
-          # Optional: External repository sync configuration
-          external_repo: ${{ secrets.EXTERNAL_REPO }}
-          external_token: ${{ secrets.EXTERNAL_TOKEN }}
