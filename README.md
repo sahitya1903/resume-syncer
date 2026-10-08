@@ -11,7 +11,7 @@
 
 - **Automated Sync & Diffing**: Runs on a cron schedule or manual trigger, comparing the LaTeX source to skip execution if no changes are detected.
 - **Selenium WebSocket Scraper**: Uses headless Chrome to bypass Overleaf protections and recursively extract the LaTeX code from WebSocket performance logs.
-- **Conflict-Free Git Commits**: Uses a temporary backup-reset-restore sequence to commit the new PDF and LaTeX source without merge/rebase conflicts.
+- **Conflict-Free Git Commits**: Resets onto the latest remote commit while keeping the new files in the working tree, so the PDF and LaTeX source are committed without merge/rebase conflicts.
 - **Direct Google Drive Sync**: Updates your public resume PDF in-place on Google Drive using a self-contained Python script.
 - **Local Debugging Support**: Built to run locally on your machine for easy testing and debugging without crashing on missing GitHub environments.
 
@@ -47,7 +47,6 @@ jobs:
   sync-resume:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7 
       - uses: sahitya1903/resume-syncer@v1
         with:
           overleaf_url: ${{ secrets.OVERLEAF_URL }}

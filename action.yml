@@ -11,6 +11,7 @@ inputs:
     description: GitHub token for authentication
   gdrive_link:
     description: Google drive link with edit permission
+    required: false
   gdrive_service_account_key:
     description: Service account JSON key string for Google Drive access
     required: false
@@ -20,6 +21,8 @@ runs:
   steps:
     - name: Checkout repo
       uses: actions/checkout@v7
+      with:
+        token: ${{ inputs.github_token }}
 
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -35,31 +38,17 @@ runs:
       run: python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}"
       shell: bash
 
-    - name: Commit the PDF file
-      id: set-output
+    - name: Commit resume files
       if: steps.script.outputs.skip != 'True'
       run: |
-        # 1. Temporarily back up the newly compiled Overleaf resume files
-        cp resume.pdf temp_resume.pdf
-        cp resume.tex temp_resume.tex
-
-        # 2. Determine target branch dynamically (fallback to main)
-        BRANCH_NAME="${GITHUB_REF_NAME}"
-        if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "HEAD" ]; then
-          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
-        fi
-
-        # 3. Reset the local repository to match the latest remote commit on that branch
+        # Move HEAD and the index to the latest remote commit while keeping the new resume
+        # files in the working tree, so the commit never conflicts with pushes made mid-run
+        BRANCH_NAME="${GITHUB_REF_NAME:-main}"
         git fetch origin "$BRANCH_NAME"
-        git reset --hard FETCH_HEAD
+        git reset FETCH_HEAD
 
-        # 4. Restore the new Overleaf files (overwriting the older versions)
-        mv temp_resume.pdf resume.pdf
-        mv temp_resume.tex resume.tex
-
-        # 5. Configure Git and commit the changes
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git config --global user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config user.name "github-actions[bot]"
 
         git add -f resume.tex resume.pdf
         if git diff --cached --quiet; then
@@ -68,12 +57,10 @@ runs:
           git commit -m "Resume updated"
           git push origin "HEAD:$BRANCH_NAME"
         fi
-      env:
-        GITHUB_TOKEN: '${{ inputs.github_token }}'
       shell: bash
 
     - name: Upload to google drive
-      if: ${{ inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True'}}
+      if: ${{ inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True' }}
       run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py"
       env:
         GDRIVE_LINK: ${{ inputs.gdrive_link }}
