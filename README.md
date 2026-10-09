@@ -88,7 +88,6 @@ Add these lines to your `.gitignore` to prevent auto-generated files from clutte
 ```gitignore
 resume.pdf
 resume.tex
-temp/
 .secrets
 ```
 

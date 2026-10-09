@@ -2,35 +2,35 @@ import json
 import os
 import shutil
 import sys
+import tempfile
 import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-download_path = os.path.abspath(os.path.join(os.getcwd(), 'temp'))
-os.makedirs(download_path, exist_ok=True)
+TEX_FILE = 'resume.tex'
+PDF_FILE = 'resume.pdf'
+
 
 def find_latex_array(data):
+    """Recursively find the list of source lines that contains the LaTeX document."""
     if isinstance(data, list):
-        if all(isinstance(item, str) for item in data) and any('\\begin{document}' in item for item in data):
-            return data
-        for item in data:
-            res = find_latex_array(item)
-            if res is not None:
-                return res
+        if all(isinstance(item, str) for item in data):
+            return data if any('\\begin{document}' in item for item in data) else None
     elif isinstance(data, dict):
-        for val in data.values():
-            res = find_latex_array(val)
-            if res is not None:
-                return res
+        data = data.values()
+    else:
+        return None
+
+    for item in data:
+        if (result := find_latex_array(item)) is not None:
+            return result
     return None
 
 
 class Browser(webdriver.Chrome):
-    def __init__(self):
-
-        # Set Chrome preferences
+    def __init__(self, download_dir):
         options = webdriver.ChromeOptions()
         options.add_argument('--headless=new')
         options.add_argument('--disable-gpu')
@@ -41,139 +41,97 @@ class Browser(webdriver.Chrome):
             'prefs',
             {
                 'profile.default_content_settings.popups': 0,
-                'download.default_directory': download_path,
+                'download.default_directory': download_dir,
             },
         )
 
         super().__init__(options=options)
+        self.download_dir = download_dir
         self.wait = WebDriverWait(self, 60)
 
     def fetch_latex(self):
-        # wait for the latex to load
-        self.wait.until(
-            lambda driver: driver.find_element(
-                By.CSS_SELECTOR,
-                'div[data-language="latex"]',
-            )
-        )
+        self.wait.until(lambda d: d.find_element(By.CSS_SELECTOR, 'div[data-language="latex"]'))
 
-        latex = ''
+        # The LaTeX source is delivered in a websocket frame, so read it from the performance log
         decoder = json.JSONDecoder()
-
-        # the latex code is fetched in a websocket request
         for entry in self.get_log('performance'):
+            message = json.loads(entry['message'])['message']
+            if message['method'] != 'Network.webSocketFrameReceived':
+                continue
+
+            payload = message['params']['response']['payloadData']
+            if '\\begin{document}' not in payload:
+                continue
+
+            # Skip the socket.io prefix and decode the JSON body that follows it
+            start = min(i for i in (payload.find('['), payload.find('{')) if i != -1)
             try:
-                message = json.loads(entry['message'])['message']
-                if message['method'] == 'Network.webSocketFrameReceived':
-                    payload = message['params']['response']['payloadData']
-                    # print(payload)
+                data, _ = decoder.raw_decode(payload, start)
+            except json.JSONDecodeError:
+                continue
 
-                    if '\\begin{document}' in payload:
-                        start_idx = min((payload.find(c) for c in ('[', '{') if payload.find(c) != -1), default=-1)
-                        if start_idx != -1:
-                            data, _ = decoder.raw_decode(payload[start_idx:])
-                            arr = find_latex_array(data)
-                            if arr:
-                                latex = '\n'.join(arr)
-                                break
-            except:
-                pass
+            if lines := find_latex_array(data):
+                return '\n'.join(lines)
 
-        if latex == '':
-            raise ValueError('Unable to fetch ⚠️')
+        raise ValueError('Unable to fetch LaTeX source ⚠️')
 
-        return latex
+    def download_pdf(self, dest):
+        self.wait.until(
+            lambda d: d.find_element(By.CSS_SELECTOR, 'a[aria-label="Download PDF"][data-disabled="false"]')
+        ).click()
 
-    def download_pdf(self):
-        # Clear the download path first to remove any stale files from previous runs
-        for f in os.listdir(download_path):
-            try:
-                os.remove(os.path.join(download_path, f))
-            except OSError:
-                pass
-
-        # click on the download button to get the pdf
-        download_btn = self.wait.until(
-            lambda driver: driver.find_element(
-                By.CSS_SELECTOR,
-                'a[aria-label="Download PDF"][data-disabled="false"]',
-            )
-        )
-
-        download_btn.click()
-
-        # Wait for the download to complete robustly
-        timeout = 30
-        start_time = time.time()
-        downloaded_file = None
-
-        while time.time() - start_time < timeout:
-            files = os.listdir(download_path)
-            # Filter out in-progress chrome downloads
-            completed_files = [f for f in files if not f.endswith('.crdownload') and not f.endswith('.tmp')]
-            if completed_files:
-                downloaded_file = completed_files[0]
-                break
+        deadline = time.time() + 30
+        while time.time() < deadline:
+            # Ignore in-progress Chrome downloads
+            done = [f for f in os.listdir(self.download_dir) if not f.endswith(('.crdownload', '.tmp'))]
+            if done:
+                shutil.move(os.path.join(self.download_dir, done[0]), dest)
+                print('PDF downloaded 🎉')
+                return
             time.sleep(1)
 
-        if not downloaded_file:
-            raise FileNotFoundError("PDF download timed out or failed ⚠️")
+        raise TimeoutError('PDF download timed out ⚠️')
 
-        print('Pdf downloaded 🎉')
 
-        # Move the pdf to the root
-        shutil.move(os.path.join(download_path, downloaded_file), 'resume.pdf')
-
-def save_latex_if_updated(latex, filename):
+def read_text(path):
     try:
-        with open(filename, 'r', encoding='utf-8') as file:
-            if latex == file.read():
-                return False
-
+        with open(path, encoding='utf-8') as f:
+            return f.read()
     except FileNotFoundError:
-        print('First run 🏃♂️')
+        return None
 
-    with open(filename, 'w', encoding='utf-8') as file:
-        file.write(latex)
 
-    return True
+def set_output(skip):
+    """Expose skip=True/False to the later steps of the composite action."""
+    if path := os.environ.get('GITHUB_OUTPUT'):
+        with open(path, 'a', encoding='utf-8') as f:
+            f.write(f'skip={skip}\n')
 
-if len(sys.argv) < 2:
-    print("Error: Missing overleaf URL argument.")
-    print("Usage: python selenium_script.py <overleaf_url>")
-    sys.exit(1)
-url = sys.argv[1]
 
-# url = 'https://www.overleaf.com/read/xgkptdvgqhps#f17f92'
+def main():
+    if len(sys.argv) < 2:
+        sys.exit('Usage: python selenium_script.py <overleaf_url>')
 
-browser = Browser()
-try:
-    browser.get(url)
+    with tempfile.TemporaryDirectory() as download_dir:
+        browser = Browser(download_dir)
+        try:
+            browser.get(sys.argv[1])
+            latex = browser.fetch_latex()
 
-    try:
-        latex = browser.fetch_latex()
-    except Exception as e:
-        print(e)
-        sys.exit(1)
+            if latex == read_text(TEX_FILE):
+                print('No changes detected ✅')
+                set_output(True)
+                return
 
-    changes_detected = save_latex_if_updated(latex, 'resume.tex')
+            browser.download_pdf(PDF_FILE)
+        finally:
+            browser.quit()
 
-    if not changes_detected:
-        print('No changes detected ✅️')
+    # Save the source only after the PDF is in place, so a failed download is retried on the next run
+    with open(TEX_FILE, 'w', encoding='utf-8') as f:
+        f.write(latex)
+    set_output(False)
 
-        # setting github env var: skip=True
-        github_output = os.environ.get('GITHUB_OUTPUT')
-        if github_output:
-            with open(github_output, 'a', encoding='utf-8') as fh:
-                fh.write('skip=True\n')
 
-        sys.exit(0)
-
-    browser.download_pdf()
-
-    github_output = os.environ.get('GITHUB_OUTPUT')
-    if github_output:
-        with open(github_output, 'a', encoding='utf-8') as fh:
-            fh.write('skip=False\n')
-finally:
-    browser.quit()
+if __name__ == '__main__':
+    main()
