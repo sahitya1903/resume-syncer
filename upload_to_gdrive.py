@@ -1,66 +1,40 @@
-import os
-import sys
 import json
+import os
+import re
+import sys
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-# Retrieve environment variables
-gdrive_link = os.environ.get("GDRIVE_LINK")
-service_account_info_str = os.environ.get("GDRIVE_SERVICE_ACCOUNT_KEY")
 
-if not gdrive_link or not service_account_info_str:
-    print("Error: Missing GDRIVE_LINK or GDRIVE_SERVICE_ACCOUNT_KEY environment variables.")
-    sys.exit(1)
-
-
-def find_id(link: str) -> str:
+def find_id(link):
+    """Extract the file ID from a Drive share link, or return the input as-is if it is already a raw ID."""
     link = link.strip()
-    
-    # E.g., 'https://drive.google.com/file/d/<id>/view?...'
-    if "/d/" in link:
-        start = link.find("/d/") + 3
-        end = link.find("/", start)
-        if end == -1:
-            return link[start:]
-        return link[start:end]
+    match = re.search(r'(?:/d/|[?&]id=)([\w-]+)', link)
+    return match.group(1) if match else link
 
-    raise ValueError(f"Could not parse file ID from link: {link}")
+
+def main():
+    link = os.environ.get('GDRIVE_LINK')
+    key = os.environ.get('GDRIVE_SERVICE_ACCOUNT_KEY')
+    if not link or not key:
+        sys.exit('Error: GDRIVE_LINK and GDRIVE_SERVICE_ACCOUNT_KEY must be set.')
+
+    file_id = find_id(link)
+    credentials = service_account.Credentials.from_service_account_info(
+        json.loads(key),
+        scopes=['https://www.googleapis.com/auth/drive'],
+    )
+    drive = build('drive', 'v3', credentials=credentials)
+
+    print(f'Uploading resume.pdf to Google Drive file ID: {file_id}...')
+    updated = drive.files().update(
+        fileId=file_id,
+        media_body=MediaFileUpload('resume.pdf', mimetype='application/pdf'),
+    ).execute()
+    print(f"Uploaded! File name on Google Drive: {updated.get('name')}")
+
 
 if __name__ == '__main__':
-    try:
-        file_id = find_id(gdrive_link)
-        print(f"Parsed Google Drive file ID: {file_id}")
-
-        # Load credentials from the JSON string provided as input/secret
-        service_account_info = json.loads(service_account_info_str)
-        credentials = service_account.Credentials.from_service_account_info(
-            service_account_info,
-            scopes=['https://www.googleapis.com/auth/drive'],
-        )
-
-        # Build drive client with static discovery to avoid network overhead
-        drive = build('drive', 'v3', credentials=credentials, static_discovery=True)
-
-        # Check if the PDF file exists before trying to upload
-        if not os.path.exists('resume.pdf'):
-            raise FileNotFoundError("resume.pdf not found in the workspace root. Please ensure the Selenium script ran and downloaded the file successfully.")
-
-        # Use MediaFileUpload to upload the file directly from the filesystem
-        media = MediaFileUpload(
-            'resume.pdf',
-            mimetype='application/pdf',
-            resumable=False
-        )
-
-        print(f"Uploading 'resume.pdf' to Google Drive file ID: {file_id}...")
-        new_file = drive.files().update(
-            fileId=file_id,
-            media_body=media
-        ).execute()
-
-        print(f"Successfully uploaded! File name on Google Drive: {new_file.get('name')}")
-
-    except Exception as e:
-        print(f"Error during Google Drive upload: {e}")
-        sys.exit(1)
+    main()
