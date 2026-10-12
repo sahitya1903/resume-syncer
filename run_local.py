@@ -1,87 +1,71 @@
 import os
 import subprocess
 import sys
-    
+import tempfile
+
+
 def parse_secrets(content):
+    """Parse KEY=VALUE lines; quoted values may span multiple lines (e.g. a JSON key)."""
     secrets = {}
-    lines = content.splitlines()
-    i = 0
-    while i < len(lines):
-        line = lines[i].strip()
-        if not line or line.startswith('#'):
-            i += 1
+    lines = iter(content.splitlines())
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
             continue
-        if '=' in line:
-            key, val = line.split('=', 1)
-            key = key.strip()
-            val = val.strip()
-            
-            # Check for quoted values (might be multi-line)
-            if val.startswith("'") or val.startswith('"'):
-                quote_char = val[0]
-                if len(val) > 1 and val.endswith(quote_char) and not val.endswith('\\' + quote_char):
-                    secrets[key] = val[1:-1]
-                else:
-                    accumulated = [val[1:]]
-                    i += 1
-                    while i < len(lines):
-                        next_line = lines[i]
-                        if next_line.rstrip().endswith(quote_char):
-                            accumulated.append(next_line.rstrip()[:-1])
-                            break
-                        else:
-                            accumulated.append(next_line)
-                        i += 1
-                    secrets[key] = '\n'.join(accumulated)
-            else:
-                secrets[key] = val
-        i += 1
+
+        key, val = (part.strip() for part in line.split('=', 1))
+        quote = val[:1]
+        if quote in ('"', "'"):
+            parts = [val[1:]]
+            while not parts[-1].rstrip().endswith(quote):
+                parts.append(next(lines, quote))
+            val = '\n'.join(parts).rstrip()[:-1]
+        secrets[key] = val
     return secrets
 
-def main():
-    secrets_path = '.secrets'
-    if not os.path.exists(secrets_path):
-        print(f"Error: {secrets_path} file not found.")
-        sys.exit(1)
-        
-    print(f"Reading secrets from {secrets_path}...")
-    with open(secrets_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    secrets = parse_secrets(content)
 
-    # Ensure required secrets exist
+def run(script, *args, env=None):
+    result = subprocess.run([sys.executable, script, *args], env=env)
+    if result.returncode:
+        sys.exit(result.returncode)
+
+
+def main():
+    try:
+        with open('.secrets', encoding='utf-8') as f:
+            secrets = parse_secrets(f.read())
+    except FileNotFoundError:
+        sys.exit('Error: .secrets file not found.')
+
     overleaf_url = secrets.get('OVERLEAF_URL')
     if not overleaf_url:
-        print("Error: OVERLEAF_URL not found in .secrets")
-        sys.exit(1)
+        sys.exit('Error: OVERLEAF_URL not found in .secrets')
 
-    # 2. Run the Selenium script to download the resume
-    print("\n--- Running Selenium script ---")
+    # Capture the selenium script's skip output the same way GitHub Actions does
+    fd, output_path = tempfile.mkstemp()
+    os.close(fd)
     try:
-        subprocess.run([sys.executable, 'selenium_script.py', overleaf_url], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Selenium script failed with exit code {e.returncode}")
-        sys.exit(e.returncode)
+        print('\n--- Running Selenium script ---')
+        run('selenium_script.py', overleaf_url, env={**os.environ, 'GITHUB_OUTPUT': output_path})
+        with open(output_path, encoding='utf-8') as f:
+            unchanged = 'skip=True' in f.read()
+    finally:
+        os.remove(output_path)
 
-    # 3. Run GDrive Sync Script if credentials exist
     gdrive_link = secrets.get('GDRIVE_LINK')
-    gdrive_sa = secrets.get('GDRIVE_SERVICE_ACCOUNT')
-    
-    if gdrive_link and gdrive_sa:
-        print("\n--- Running Google Drive upload script ---")
-        # Set environment variables for the subprocess
-        env = os.environ.copy()
-        env['GDRIVE_LINK'] = gdrive_link
-        env['GDRIVE_SERVICE_ACCOUNT_KEY'] = gdrive_sa
-        
-        try:
-            subprocess.run([sys.executable, 'upload_to_gdrive.py'], env=env, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Google Drive upload script failed with exit code {e.returncode}")
-            sys.exit(e.returncode)
+    gdrive_key = secrets.get('GDRIVE_SERVICE_ACCOUNT')
+    if unchanged:
+        print('\nResume unchanged. Skipping Google Drive upload.')
+    elif not (gdrive_link and gdrive_key):
+        print('\nGoogle Drive configuration not found. Skipping Google Drive upload.')
     else:
-        print("\nGoogle Drive configuration not found. Skipping Google Drive upload.")
+        print('\n--- Running Google Drive upload script ---')
+        run('upload_to_gdrive.py', env={
+            **os.environ,
+            'GDRIVE_LINK': gdrive_link,
+            'GDRIVE_SERVICE_ACCOUNT_KEY': gdrive_key,
+        })
+
 
 if __name__ == '__main__':
     main()

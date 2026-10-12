@@ -120,7 +120,7 @@ You can run the sync pipeline locally using the provided automated script `run_l
    ```bash
    python run_local.py
    ```
-   This script automatically reads your `.secrets` file, parses the multi-line service account key, downloads the files using your local Chrome browser, and syncs them to Google Drive if credentials are provided.
+   This script automatically reads your `.secrets` file, parses the multi-line service account key, downloads the files using your local Chrome browser, and syncs them to Google Drive if credentials are provided and the resume has changed.
 
 ---
 
