@@ -33,17 +33,10 @@ class Browser(webdriver.Chrome):
     def __init__(self, download_dir):
         options = webdriver.ChromeOptions()
         options.add_argument('--headless=new')
-        options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
-        options.add_experimental_option(
-            'prefs',
-            {
-                'profile.default_content_settings.popups': 0,
-                'download.default_directory': download_dir,
-            },
-        )
+        options.add_experimental_option('prefs', {'download.default_directory': download_dir})
 
         super().__init__(options=options)
         self.download_dir = download_dir
@@ -73,7 +66,7 @@ class Browser(webdriver.Chrome):
             if lines := find_latex_array(data):
                 return '\n'.join(lines)
 
-        raise ValueError('Unable to fetch LaTeX source ⚠️')
+        raise ValueError('Unable to fetch LaTeX source')
 
     def download_pdf(self, dest):
         self.wait.until(
@@ -86,11 +79,11 @@ class Browser(webdriver.Chrome):
             done = [f for f in os.listdir(self.download_dir) if not f.endswith(('.crdownload', '.tmp'))]
             if done:
                 shutil.move(os.path.join(self.download_dir, done[0]), dest)
-                print('PDF downloaded 🎉')
+                print('PDF downloaded')
                 return
             time.sleep(1)
 
-        raise TimeoutError('PDF download timed out ⚠️')
+        raise TimeoutError('PDF download timed out')
 
 
 def read_text(path):
@@ -119,7 +112,7 @@ def main():
             latex = browser.fetch_latex()
 
             if latex == read_text(TEX_FILE):
-                print('No changes detected ✅')
+                print('No changes detected')
                 set_output(True)
                 return
 

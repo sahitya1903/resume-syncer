@@ -11,10 +11,8 @@ inputs:
     description: GitHub token for authentication
   gdrive_link:
     description: Google drive link with edit permission
-    required: false
   gdrive_service_account_key:
     description: Service account JSON key string for Google Drive access
-    required: false
 
 runs:
   using: 'composite'
@@ -60,7 +58,7 @@ runs:
       shell: bash
 
     - name: Upload to google drive
-      if: ${{ inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True' }}
+      if: inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True'
       run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py"
       env:
         GDRIVE_LINK: ${{ inputs.gdrive_link }}
