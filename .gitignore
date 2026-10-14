@@ -1,4 +1,4 @@
-resume.pdf
-resume.tex
+*.pdf
+*.tex
 __pycache__/
 .secrets

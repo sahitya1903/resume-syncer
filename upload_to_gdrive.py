@@ -21,6 +21,7 @@ def main():
     if not link or not key:
         sys.exit('Error: GDRIVE_LINK and GDRIVE_SERVICE_ACCOUNT_KEY must be set.')
 
+    pdf_file = f"{sys.argv[1] if len(sys.argv) > 1 else 'resume'}.pdf"
     file_id = find_id(link)
     credentials = service_account.Credentials.from_service_account_info(
         json.loads(key),
@@ -28,10 +29,10 @@ def main():
     )
     drive = build('drive', 'v3', credentials=credentials)
 
-    print(f'Uploading resume.pdf to Google Drive file ID: {file_id}...')
+    print(f'Uploading {pdf_file} to Google Drive file ID: {file_id}...')
     updated = drive.files().update(
         fileId=file_id,
-        media_body=MediaFileUpload('resume.pdf', mimetype='application/pdf'),
+        media_body=MediaFileUpload(pdf_file, mimetype='application/pdf'),
     ).execute()
     print(f"Uploaded! File name on Google Drive: {updated.get('name')}")
 

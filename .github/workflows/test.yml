@@ -12,11 +12,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./ # Uses action.yml in the root directory
+
+      # One step per resume; each needs a distinct resume_name so their files don't overwrite each other
+      - name: Sync core resume
+        uses: ./ # Uses action.yml in the root directory
         with:
-          overleaf_url: ${{ secrets.OVERLEAF_URL }}
+          resume_name: core
+          overleaf_url: ${{ secrets.OVERLEAF_URL_CORE }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
           # Optional: Google Drive sync configuration
-          gdrive_link: ${{ secrets.GDRIVE_LINK }}
+          gdrive_link: ${{ secrets.GDRIVE_LINK_CORE }}
+          gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
+
+      - name: Sync IT resume
+        uses: ./
+        with:
+          resume_name: it
+          overleaf_url: ${{ secrets.OVERLEAF_URL_IT }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          gdrive_link: ${{ secrets.GDRIVE_LINK_IT }}
           gdrive_service_account_key: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}

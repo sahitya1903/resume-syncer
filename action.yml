@@ -1,5 +1,5 @@
 name: Overleaf Resume Syncer
-description: Syncs resume.pdf and resume.tex from Overleaf to GitHub, with optional Google Drive upload.
+description: Syncs a resume PDF and LaTeX source from Overleaf to GitHub, with optional Google Drive upload.
 author: sahitya1903
 
 inputs:
@@ -9,6 +9,9 @@ inputs:
   github_token:
     required: true
     description: GitHub token for authentication
+  resume_name:
+    default: resume
+    description: Base name of the synced files (e.g. core -> core.tex, core.pdf); use a different name per resume
   gdrive_link:
     description: Google drive link with edit permission
   gdrive_service_account_key:
@@ -33,7 +36,9 @@ runs:
 
     - name: Run Selenium script
       id: script
-      run: python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}"
+      run: python "${GITHUB_ACTION_PATH}/selenium_script.py" "${{ inputs.overleaf_url }}" "$RESUME_NAME"
+      env:
+        RESUME_NAME: ${{ inputs.resume_name }}
       shell: bash
 
     - name: Commit resume files
@@ -48,19 +53,22 @@ runs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git config user.name "github-actions[bot]"
 
-        git add -f resume.tex resume.pdf
+        git add -f "$RESUME_NAME.tex" "$RESUME_NAME.pdf"
         if git diff --cached --quiet; then
           echo "No changes to commit."
         else
-          git commit -m "Resume updated"
+          git commit -m "Resume updated ($RESUME_NAME)"
           git push origin "HEAD:$BRANCH_NAME"
         fi
+      env:
+        RESUME_NAME: ${{ inputs.resume_name }}
       shell: bash
 
     - name: Upload to google drive
       if: inputs.gdrive_link != '' && inputs.gdrive_service_account_key != '' && steps.script.outputs.skip != 'True'
-      run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py"
+      run: python "${GITHUB_ACTION_PATH}/upload_to_gdrive.py" "$RESUME_NAME"
       env:
+        RESUME_NAME: ${{ inputs.resume_name }}
         GDRIVE_LINK: ${{ inputs.gdrive_link }}
         GDRIVE_SERVICE_ACCOUNT_KEY: ${{ inputs.gdrive_service_account_key }}
       shell: bash

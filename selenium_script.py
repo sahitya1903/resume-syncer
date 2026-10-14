@@ -9,9 +9,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-TEX_FILE = 'resume.tex'
-PDF_FILE = 'resume.pdf'
-
 
 def find_latex_array(data):
     """Recursively find the list of source lines that contains the LaTeX document."""
@@ -103,7 +100,10 @@ def set_output(skip):
 
 def main():
     if len(sys.argv) < 2:
-        sys.exit('Usage: python selenium_script.py <overleaf_url>')
+        sys.exit('Usage: python selenium_script.py <overleaf_url> [resume_name]')
+
+    name = sys.argv[2] if len(sys.argv) > 2 else 'resume'
+    tex_file, pdf_file = f'{name}.tex', f'{name}.pdf'
 
     with tempfile.TemporaryDirectory() as download_dir:
         browser = Browser(download_dir)
@@ -111,17 +111,17 @@ def main():
             browser.get(sys.argv[1])
             latex = browser.fetch_latex()
 
-            if latex == read_text(TEX_FILE):
+            if latex == read_text(tex_file):
                 print('No changes detected')
                 set_output(True)
                 return
 
-            browser.download_pdf(PDF_FILE)
+            browser.download_pdf(pdf_file)
         finally:
             browser.quit()
 
     # Save the source only after the PDF is in place, so a failed download is retried on the next run
-    with open(TEX_FILE, 'w', encoding='utf-8') as f:
+    with open(tex_file, 'w', encoding='utf-8') as f:
         f.write(latex)
     set_output(False)
 
